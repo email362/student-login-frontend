@@ -2,6 +2,8 @@ import { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
+const URL = 'http://localhost:5000';
+
 function App() {
   const [studentId, setStudentId] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
@@ -11,7 +13,7 @@ function App() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/login', { studentId });
+      const response = await axios.post(`${URL}/api/login`, { studentId });
       setClasses(response.data.classes);
       setLoggedIn(true);
       setLoginTime(new Date());
@@ -23,7 +25,7 @@ function App() {
   const handleLogout = async () => {
     try {
       const logoutTime = new Date();
-      await axios.post('http://localhost:5000/api/log-time', {
+      await axios.post(`${URL}/api/log-time`, {
         studentId,
         className: selectedClass,
         loginTime,
