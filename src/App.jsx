@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const URL = 'http://localhost:5000';
+const URL = 'https://vivacious-jade-nightgown.cyclic.app';
 
 function App() {
   const [studentId, setStudentId] = useState('');
