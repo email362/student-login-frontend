@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 import Login from './components/Login';
+import Classes from './components/Classes';
 
 // deployment url 'https://vivacious-jade-nightgown.cyclic.app'
 
@@ -46,39 +47,18 @@ function App() {
     <div className="App">
       <header className="App-header">
         {!loggedIn ? (
-          // <div>
-          //   <h1>Student Login</h1>
-          //   <label htmlFor="studentId">Student ID</label>
-          //   <input
-          //     type="text"
-          //     placeholder="Student ID"
-          //     value={studentId}
-          //     onChange={(e) => setStudentId(e.target.value)}
-          //   />
-          //   <button onClick={handleLogin}>Login</button>
-          // </div>
           <Login 
             handleLogin={handleLogin} 
             studentId={studentId} 
             setStudentId={setStudentId}
           />
         ) : (
-          <div>
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-            >
-              <option value="">Select a class</option>
-              {classes.map((cls) => (
-                <option key={cls} value={cls}>
-                  {cls}
-                </option>
-              ))}
-            </select>
-            {selectedClass && (
-              <button onClick={handleLogout}>Logout</button>
-            )}
-          </div>
+          <Classes 
+            selectedClass={selectedClass}
+            setSelectedClass={setSelectedClass}
+            classes={classes}
+            handleLogout={handleLogout}
+          />
         )}
       </header>
     </div>
