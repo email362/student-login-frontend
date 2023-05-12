@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import axios from 'axios';
 import './App.css';
+import Login from './components/Login';
 
-const URL = 'https://vivacious-jade-nightgown.cyclic.app';
+// deployment url 'https://vivacious-jade-nightgown.cyclic.app'
+
+const URL = 'http://localhost:5100';
 
 function App() {
   const [studentId, setStudentId] = useState('');
@@ -43,17 +46,22 @@ function App() {
     <div className="App">
       <header className="App-header">
         {!loggedIn ? (
-          <div>
-            <h1>Student Login</h1>
-            <label htmlFor="studentId">Student ID</label>
-            <input
-              type="text"
-              placeholder="Student ID"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value)}
-            />
-            <button onClick={handleLogin}>Login</button>
-          </div>
+          // <div>
+          //   <h1>Student Login</h1>
+          //   <label htmlFor="studentId">Student ID</label>
+          //   <input
+          //     type="text"
+          //     placeholder="Student ID"
+          //     value={studentId}
+          //     onChange={(e) => setStudentId(e.target.value)}
+          //   />
+          //   <button onClick={handleLogin}>Login</button>
+          // </div>
+          <Login 
+            handleLogin={handleLogin} 
+            studentId={studentId} 
+            setStudentId={setStudentId}
+          />
         ) : (
           <div>
             <select
