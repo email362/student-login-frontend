@@ -1,4 +1,4 @@
-const Login = ({handleLogin, studentId, setStudentId}) => {
+const Login = ({handleGetStudent, studentId, setStudentId}) => {
 
     return (
         <div>
@@ -10,7 +10,7 @@ const Login = ({handleLogin, studentId, setStudentId}) => {
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
             />
-            <button onClick={handleLogin}>Login</button>
+            <button onClick={handleGetStudent}>Login</button>
         </div>  
     )
 }

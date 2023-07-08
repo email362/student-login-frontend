@@ -1,9 +1,16 @@
-const Classes = ({selectedClass, setSelectedClass, classes, handleLogout}) => {
+const Classes = ({selectedClass, setSelectedClass, classes, handleLogin, handleLogout}) => {
+    const onClassChange = (e) => {
+        // console.log(e.target.value);
+        const updatedClass = e.target.value;
+        setSelectedClass(updatedClass);
+        handleLogin(updatedClass);
+    };
+
     return (
         <div>
             <select
             value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
+            onChange={onClassChange}
             >
             <option value="">Select a class</option>
             {classes.map((cls) => (
