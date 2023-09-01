@@ -22,7 +22,7 @@ const Login: React.FC<LoginProps> = ({ handleGetStudent, studentId, setStudentId
                 <input
                     id="studentId"
                     type="text"
-                    placeholder="e.g., S123456"
+                    placeholder="001234567"
                     value={studentId}
                     onChange={handleInputChange}
                 />
