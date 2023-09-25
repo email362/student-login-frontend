@@ -5,28 +5,36 @@ import Login from './components/Login';
 import Classes from './components/Classes';
 
 // const URL = 'http://localhost:5100';
-const URL = 'https://vivacious-jade-nightgown.cyclic.app';
+export const URL = 'https://vivacious-jade-nightgown.cyclic.app';
 
 function App() {
-  const [studentId, setStudentId] = useState('');
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [classes, setClasses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState('');
+  const [student, setStudent] = useState({});
+  // const [studentId, setStudentId] = useState('');
+  // const [loggedIn, setLoggedIn] = useState(false);
+  // const [classes, setClasses] = useState([]);
+  // const [selectedClass, setSelectedClass] = useState('');
+  const [loginStatus, setLoginStatus] = useState('');
 
-  const handleGetStudent = async () => {
-    try {
-      const response = await axios.get(`${URL}/api/student`, { params: {studentId: studentId} });
-      // console.log(response);
-      setClasses(response.data.classes);
-      setLoggedIn(true);
-    } catch (error) {
-      console.error('Error getting student:', error);
-    }
+  // const handleGetStudent = async () => {
+  //   try {
+  //     setLoginStatus('Logging in...');
+  //     const response = await axios.get(`${URL}/api/student`, { params: {studentId: studentId} });
+  //     setStudent(response.data);
+  //     setClasses(response.data.classes);
+  //     setLoggedIn(true);
+  //     setLoginStatus('');
+  //   } catch (error) {
+  //     console.error('Error getting student:', error);
+  //     setLoginStatus("Login failed. Please try again.");
+  //   }
+  // };
+  const isEmptyObject = (obj) => {
+    return Object.keys(obj).length === 0 && obj.constructor === Object;
   };
 
   const handleLogin = async (classToSend) => {
     try {
-      const response = await axios.post(`${URL}/api/login`, { studentId, className: classToSend });
+      const response = await axios.post(`${URL}/api/login`, { studentId: student.studentId, className: classToSend });
       // console.log(response.data)
     } catch (error) {
       console.error('Error logging in:', error);
@@ -35,10 +43,10 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${URL}/api/logout`, { studentId });
-      setLoggedIn(false);
-      setSelectedClass('');
-      setStudentId('');
+      await axios.post(`${URL}/api/logout`, { studentId: student.studentId });
+      setStudent({});
+      // setLoggedIn(false);
+      // setSelectedClass('');
     } catch (error) {
       console.error('Error logging out:', error);
     }
@@ -47,19 +55,24 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        {!loggedIn ? (
+        {isEmptyObject(student) ? (
           <Login 
-            handleGetStudent={handleGetStudent} 
-            studentId={studentId} 
-            setStudentId={setStudentId}
+            // handleGetStudent={handleGetStudent} 
+            // studentId={student.studentId} 
+            // setStudentId={setStudentId}
+            loginStatus={loginStatus}
+            setLoginStatus={setLoginStatus}
+            // setLoggedIn={setLoggedIn}
+            setStudent={setStudent}
           />
         ) : (
           <Classes 
-            selectedClass={selectedClass}
-            setSelectedClass={setSelectedClass}
-            classes={classes}
-            handleLogin={handleLogin}
-            handleLogout={handleLogout}
+            // selectedClass={selectedClass}
+            // setSelectedClass={setSelectedClass}
+            classes={student.classes}
+            name={student.studentName}
+            studentId={student.studentId}
+            setStudent={setStudent}
           />
         )}
       </header>
