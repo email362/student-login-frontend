@@ -8,17 +8,14 @@ const Classes = ({ classes, name, studentId, setStudent}) => {
     const [loggedIn, setLoggedIn] = useState(false);
 
     const onClassChange = (e) => {
-        // console.log(e.target.value);
         const updatedClass = e.target.value;
         setSelectedClass(updatedClass);
-        // handleLogin(updatedClass);
     };
 
     const handleLogin = async (classToSend) => {
         try {
           const response = await axios.post(`${URL}/api/login`, { studentId: studentId, className: classToSend });
           setLoggedIn(true);
-          // console.log(response.data)
         } catch (error) {
           console.error('Error logging in:', error);
         }
@@ -29,7 +26,6 @@ const Classes = ({ classes, name, studentId, setStudent}) => {
           await axios.post(`${URL}/api/logout`, { studentId: studentId });
           setStudent({});
           setLoggedIn(false);
-          // setSelectedClass('');
         } catch (error) {
           console.error('Error logging out:', error);
         }

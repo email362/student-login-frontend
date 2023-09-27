@@ -11,8 +11,6 @@ const Login = ({setLoginStatus, setStudent, loginStatus}) => {
             setLoginStatus('Logging in...');
             const response = await axios.get(`${URL}/api/student`, { params: {studentId: studentId} });
             setStudent(response.data);
-            // setClasses(response.data.classes);
-            // setLoggedIn(true);
             setLoginStatus('');
         } catch (error) {
             console.error('Error getting student:', error);
@@ -38,7 +36,6 @@ const Login = ({setLoginStatus, setStudent, loginStatus}) => {
             onChange={(e) => setStudentId(e.target.value)}
             />
             <button onClick={handleGetStudent}>Login</button>
-            {/* show login status */}
             <div>
                 {loginStatus}
             </div>
