@@ -10,6 +10,11 @@ const Login = ({setLoginStatus, setStudent, loginStatus}) => {
         try {
             setLoginStatus('Logging in...');
             const response = await axios.get(`${URL}/api/student`, { params: {studentId: studentId} });
+            if(response.data === null) {
+                setLoginStatus("Login failed. Please try again.");
+                console.log("response.data is null");
+                return;
+            }
             setStudent(response.data);
             setLoginStatus('');
         } catch (error) {
