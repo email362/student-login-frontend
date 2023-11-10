@@ -6,7 +6,18 @@ const Login = ({setLoginStatus, setStudent, loginStatus}) => {
 
     const [studentId, setStudentId] = useState('');
 
+    const handleLoginStatus = (status) => {
+        setLoginStatus(status);
+        setTimeout(() => {
+            setLoginStatus('');
+        }, 3000);
+    };
+
     const handleGetStudent = async () => {
+        if(studentId === '') {
+            handleLoginStatus('Please enter a student ID.');
+            return;
+        }
         try {
             setLoginStatus('Logging in...');
             const response = await axios.get(`${URL}/api/student`, { params: {studentId: studentId} });
@@ -19,7 +30,7 @@ const Login = ({setLoginStatus, setStudent, loginStatus}) => {
             setLoginStatus('');
         } catch (error) {
             console.error('Error getting student:', error);
-            setLoginStatus("Login failed. Please try again.");
+            handleLoginStatus('Error getting student. Please try again.');
         }
     }
 
