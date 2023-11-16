@@ -55,7 +55,7 @@ const Login = ({setLoginStatus, setStudent, loginStatus}) => {
             <div>
                 {loginStatus}
             </div>
-        </div>  
+        </div>
     )
 }
 
