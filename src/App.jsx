@@ -8,7 +8,7 @@ import Classes from './components/Classes';
 // All packages except `@mantine/hooks` require styles imports
 import '@mantine/core/styles.css';
 
-import { MantineProvider } from '@mantine/core';
+import { Container, MantineProvider, Center, Paper } from '@mantine/core';
 
 // const URL = 'http://localhost:5100';
 export const URL = 'https://vivacious-jade-nightgown.cyclic.app';
@@ -40,25 +40,28 @@ function App() {
   };
 
   return (
-    <MantineProvider>
-      <div className="App">
-        <header className="App-header">
-          {isEmptyObject(student) ? (
-            <Login 
-            loginStatus={loginStatus}
-            setLoginStatus={setLoginStatus}
-            setStudent={setStudent}
-            />
+    <MantineProvider withGlobalStyles withNormalizeCSS defaultColorScheme='dark'>
+      <Center style={{ height: '100vh' }}> {/* This centers content vertically */}
+        <Container size="lg" style={{ width: '100%' }}> {/* Controls max width */}
+          <Paper padding="lg" shadow="xs"> {/* Optional: Adds styling to the form */}
+            {/* Conditional rendering based on student object */}
+            {isEmptyObject(student) ? (
+              <Login 
+                loginStatus={loginStatus}
+                setLoginStatus={setLoginStatus}
+                setStudent={setStudent}
+              />
             ) : (
               <Classes 
-              classes={student.classes}
-              name={student.studentName}
-              studentId={student.studentId}
-              setStudent={setStudent}
+                classes={student.classes}
+                name={student.studentName}
+                studentId={student.studentId}
+                setStudent={setStudent}
               />
-              )}
-        </header>
-      </div>
+            )}
+          </Paper>
+        </Container>
+      </Center>
     </MantineProvider>
   );
 }
