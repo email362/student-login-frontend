@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { URL } from '../App';
+import { Title, Text, Button, Select, Box, Stack } from '@mantine/core';
 
 /**
  * Converts seconds to hours, minutes, and seconds format.
@@ -62,43 +63,44 @@ const Classes = ({ classes, name, studentId, setStudent}) => {
     };
 
     return (
-        <>
-            <h1>Classes</h1>
-            <h2>Hi, {name}!</h2>
-            <div>
-                {classes.length === 0 && 
-                    (
-                        <>
-                            <p>No classes found, please contact lab assistance.</p>
-                            <button onClick={() => setStudent({})}>Logout</button>
-                        </>
-                    )
-                }
-                { classes.length > 0 &&
-                (<select
-                value={selectedClass}
-                onChange={onClassChange}
-                >
-                    <option value="">Select a class</option>
-                    {classes.map((cls) => (
-                        <option key={cls} value={cls}>
-                        {cls}
-                        </option>
-                    ))}
-                </select>)}
-            </div>
-            <div>
-                {selectedClass && loggedIn && (
-                    <>
-                        <p>Logged in to {selectedClass}</p>
-                        <p>Time Spent: {secondsToHoursMinutesSeconds(timer)} (hours:minutes:seconds)</p>
-                        <button onClick={handleLogout}>Logout</button>
-                    </>
+        <Box sx={{ maxWidth: 400 }} mx="auto">
+            <Stack spacing="md">
+                <Title order={1}>Classes</Title>
+                <Title order={2}>Hi, {name}!</Title>
+
+                {classes.length === 0 && (
+                    <Stack spacing="sm">
+                        <Text>No classes found, please contact lab assistance.</Text>
+                        <Button onClick={() => setStudent({})}>Logout</Button>
+                    </Stack>
                 )}
-                {selectedClass && !loggedIn && (
-                    <button onClick={() => handleLogin(selectedClass)}>Login</button>)}
-            </div>
-        </>
+
+                {classes.length > 0 && (
+                    <Select
+                        disabled={loggedIn}
+                        label="Select a class"
+                        placeholder="Select a class"
+                        value={selectedClass}
+                        onChange={setSelectedClass}
+                        data={classes.map(cls => ({ value: cls, label: cls }))}
+                    />
+                )}
+
+                {selectedClass && (
+                    <Box>
+                        {loggedIn ? (
+                            <Stack spacing="sm">
+                                <Text>Logged in to {selectedClass}</Text>
+                                <Text>Time Spent: {secondsToHoursMinutesSeconds(timer)} (hours:minutes:seconds)</Text>
+                                <Button onClick={handleLogout}>Logout</Button>
+                            </Stack>
+                        ) : (
+                            <Button onClick={() => handleLogin(selectedClass)}>Login</Button>
+                        )}
+                    </Box>
+                )}
+            </Stack>
+        </Box>
     );
 };
 

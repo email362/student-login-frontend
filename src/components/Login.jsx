@@ -1,12 +1,24 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import { URL } from '../App';
+import { TextInput, Button, Title, Box, Notification } from '@mantine/core';
 
 const Login = ({setLoginStatus, setStudent, loginStatus}) => {
 
     const [studentId, setStudentId] = useState('');
 
+    const handleLoginStatus = (status) => {
+        setLoginStatus(status);
+        setTimeout(() => {
+            setLoginStatus('');
+        }, 3000);
+    };
+
     const handleGetStudent = async () => {
+        if(studentId === '') {
+            handleLoginStatus('Please enter a student ID.');
+            return;
+        }
         try {
             setLoginStatus('Logging in...');
             const response = await axios.get(`${URL}/api/student`, { params: {studentId: studentId} });
@@ -19,7 +31,7 @@ const Login = ({setLoginStatus, setStudent, loginStatus}) => {
             setLoginStatus('');
         } catch (error) {
             console.error('Error getting student:', error);
-            setLoginStatus("Login failed. Please try again.");
+            handleLoginStatus('Error getting student. Please try again.');
         }
     }
 
@@ -30,22 +42,30 @@ const Login = ({setLoginStatus, setStudent, loginStatus}) => {
     };
 
     return (
-        <div>
-            <h1>Student Login</h1>
-            <label htmlFor="studentId">Student ID</label>
-            <input
-            onKeyDown={handleKeyDown}
-            type="text"
-            placeholder="Student ID"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
+        <Box sx={{ maxWidth: 300 }} mx="auto">
+            <Title order={1}>Student Login</Title>
+            <TextInput
+                label={studentId ? "Student ID" : ""}
+                placeholder="Student ID"
+                required
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
+                onKeyDown={handleKeyDown}
+                data-floating="Student ID"
             />
-            <button onClick={handleGetStudent}>Login</button>
-            <div>
-                {loginStatus}
-            </div>
-        </div>  
-    )
+            <Button onClick={handleGetStudent} mt="md">
+                Login
+            </Button>
+            {loginStatus && (
+                <Notification
+                    color={loginStatus.includes('Error') || loginStatus.includes('failed') ? 'red' : 'blue'}
+                    onClose={() => setLoginStatus('')}
+                >
+                    {loginStatus}
+                </Notification>
+            )}
+        </Box>
+    );
 }
 
 export default Login;

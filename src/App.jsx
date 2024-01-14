@@ -4,8 +4,22 @@ import './App.css';
 import Login from './components/Login';
 import Classes from './components/Classes';
 
+// Import styles of packages that you've installed.
+// All packages except `@mantine/hooks` require styles imports
+import '@mantine/core/styles.css';
+
+import { Container, MantineProvider, Center, Paper } from '@mantine/core';
+
 // const URL = 'http://localhost:5100';
 export const URL = 'https://vivacious-jade-nightgown.cyclic.app';
+
+// hardcoded student
+
+// const fakeStudent = {
+//   classes: [ "CSE 5700-Prof-Section", "CSE 4310-Prof-Section", "CSE 5720-Prof-Section" ],
+//   studentName: "Chris Hyer",
+//   studentId: "008060618"
+// };
 
 function App() {
   const [student, setStudent] = useState({});
@@ -34,24 +48,29 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        {isEmptyObject(student) ? (
-          <Login 
-            loginStatus={loginStatus}
-            setLoginStatus={setLoginStatus}
-            setStudent={setStudent}
-          />
-        ) : (
-          <Classes 
-            classes={student.classes}
-            name={student.studentName}
-            studentId={student.studentId}
-            setStudent={setStudent}
-          />
-        )}
-      </header>
-    </div>
+    <MantineProvider withGlobalStyles withNormalizeCSS defaultColorScheme='auto'>
+      <Center style={{ height: '100vh' }}> {/* This centers content vertically */}
+        <Container size="lg" style={{ width: '100%' }}> {/* Controls max width */}
+          <Paper padding="lg" shadow="xs"> {/* Optional: Adds styling to the form */}
+            {/* Conditional rendering based on student object */}
+            {isEmptyObject(student) ? (
+              <Login 
+                loginStatus={loginStatus}
+                setLoginStatus={setLoginStatus}
+                setStudent={setStudent}
+              />
+            ) : (
+              <Classes 
+                classes={student.classes}
+                name={student.studentName}
+                studentId={student.studentId}
+                setStudent={setStudent}
+              />
+            )}
+          </Paper>
+        </Container>
+      </Center>
+    </MantineProvider>
   );
 }
 
