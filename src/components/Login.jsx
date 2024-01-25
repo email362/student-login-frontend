@@ -23,7 +23,7 @@ const Login = ({setLoginStatus, setStudent, loginStatus}) => {
             setLoginStatus('Logging in...');
             const response = await axios.get(`${URL}/api/student`, { params: {studentId: studentId} });
             if(response.data === null) {
-                setLoginStatus("Login failed. Please try again.");
+                setLoginStatus("No Language Classes found. Please see MLC Staff.");
                 console.log("response.data is null");
                 return;
             }
@@ -58,7 +58,7 @@ const Login = ({setLoginStatus, setStudent, loginStatus}) => {
             </Button>
             {loginStatus && (
                 <Notification
-                    color={loginStatus.includes('Error') || loginStatus.includes('failed') ? 'red' : 'blue'}
+                    color={loginStatus.includes('Error') || loginStatus.includes("No Language") ? 'red' : 'blue'}
                     onClose={() => setLoginStatus('')}
                 >
                     {loginStatus}
