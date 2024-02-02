@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { URL } from '../App';
+import { URL } from '../constants';
 import { Title, Text, Button, Select, Box, Stack } from '@mantine/core';
 
 /**

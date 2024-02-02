@@ -9,17 +9,7 @@ import Classes from './components/Classes';
 import '@mantine/core/styles.css';
 
 import { Container, MantineProvider, Center, Paper } from '@mantine/core';
-
-// const URL = 'http://localhost:5100';
-export const URL = 'https://vivacious-jade-nightgown.cyclic.app';
-
-// hardcoded student
-
-// const fakeStudent = {
-//   classes: [ "CSE 5700-Prof-Section", "CSE 4310-Prof-Section", "CSE 5720-Prof-Section" ],
-//   studentName: "Chris Hyer",
-//   studentId: "008060618"
-// };
+import { URL } from './constants';
 
 function App() {
   const [student, setStudent] = useState({});
