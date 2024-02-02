@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState } from 'react';
-import { URL } from '../App';
+import { URL } from '../constants';
 import { TextInput, Button, Title, Box, Notification } from '@mantine/core';
 
 const Login = ({setLoginStatus, setStudent, loginStatus}) => {
