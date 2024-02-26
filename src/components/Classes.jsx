@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { URL } from '../constants';
 import { Title, Text, Button, Select, Box, Stack } from '@mantine/core';
+import { useLoaderData, useParams, useNavigate } from 'react-router-dom';
+
+export async function loader({params}) {
+    const response = await axios.get(`${URL}/api/student`, { params: { studentId: params.studentId } });
+    return response.data;
+}
 
 /**
  * Converts seconds to hours, minutes, and seconds format.
@@ -15,12 +21,14 @@ function secondsToHoursMinutesSeconds(seconds) {
     return `${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}:${secondsLeft < 10 ? '0' + secondsLeft : secondsLeft}`;
 }
 
-const Classes = ({ classes, name, studentId, setStudent}) => {
-
+function Classes({setStudent=null}) {
+    const { studentId } = useParams();
+    const { classes, studentName } = useLoaderData();
     const [selectedClass, setSelectedClass] = useState('');
     const [loggedIn, setLoggedIn] = useState(false);
     const [timer, setTimer] = useState(0);
     const [startTimer, setStartTimer] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         let interval = null;
@@ -54,9 +62,10 @@ const Classes = ({ classes, name, studentId, setStudent}) => {
     const handleLogout = async () => {
         try {
           await axios.post(`${URL}/api/logout`, { studentId: studentId });
-          setStudent({});
+        //   setStudent({});
           setStartTimer(false);
           setLoggedIn(false);
+          navigate('/', { replace: true });
         } catch (error) {
           console.error('Error logging out:', error);
         }
@@ -66,7 +75,7 @@ const Classes = ({ classes, name, studentId, setStudent}) => {
         <Box sx={{ maxWidth: 400 }} mx="auto">
             <Stack spacing="md">
                 <Title order={1}>Classes</Title>
-                <Title order={2}>Hi, {name}!</Title>
+                <Title order={2}>Hi, {studentName}!</Title>
 
                 {classes.length === 0 && (
                     <Stack spacing="sm">
