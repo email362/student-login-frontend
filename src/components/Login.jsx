@@ -2,10 +2,13 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { URL } from '../constants';
 import { TextInput, Button, Title, Box, Notification } from '@mantine/core';
+import { useNavigate } from 'react-router-dom';
 
-const Login = ({setLoginStatus, setStudent, loginStatus}) => {
+const Login = () => {
 
+    const [loginStatus, setLoginStatus] = useState('');
     const [studentId, setStudentId] = useState('');
+    const navigate = useNavigate();
 
     const handleLoginStatus = (status) => {
         setLoginStatus(status);
@@ -27,8 +30,9 @@ const Login = ({setLoginStatus, setStudent, loginStatus}) => {
                 console.log("response.data is null");
                 return;
             }
-            setStudent(response.data);
+            // setStudent(response.data);
             setLoginStatus('');
+            navigate(`/students/${studentId}`, { replace: true });
         } catch (error) {
             console.error('Error getting student:', error);
             handleLoginStatus('Error getting student. Please try again.');
