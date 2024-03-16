@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Button, FileButton, FileInput, Group, Text, Table } from '@mantine/core';
+import { URL } from '../../constants';
 
 
 function parseName(name) {
@@ -28,10 +29,76 @@ async function readFile(file, callback = data => data) {
 function ImportStudents({ onImport = () => console.log('onImport function called'), students = null, onCancel }) {
     const [file, setFile] = useState(null);
     const [error, setError] = useState(null);
-    const [table, setTable] = useState(null);
+    // const [table, setTable] = useState(null);
     const [fileName, setFileName] = useState(null);
     const [matchedStudents, setMatchedStudents] = useState([]);
+    const [newStudents, setNewStudents] = useState([]);
     const [importedStudents, setImportedStudents] = useState([]);
+
+    onImport = () => {
+        console.log("Importing students");
+        console.log("New Students", newStudents);
+        console.log("Matched Students", matchedStudents);
+        let newFetchPromises = [];
+        let matchedFetchPromises = [];
+        let newStudentsArr = newStudents.map((student) => {
+            const newStudent = { studentId: student.ID, studentName: student.Name, classes: [fileName] };
+            // return a promise that resolves when the student is added to the database
+            return new Promise((resolve, reject) => {
+                fetch(`${URL}/api/students`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newStudent)
+                }).then((response) => {
+                    if (response.ok) {
+                        resolve(newStudent);
+                    } else {
+                        reject(new Error(`Failed to add student: ${newStudent.studentName} with ID: ${newStudent.studentId}`));
+                    }
+                }).catch((error) => {
+                    reject(error);
+                });
+            });
+        });
+        let matchedStudentsArr = matchedStudents.map((student) => {
+            const findMatchedStudent = students.find((s) => s.studentId === student.ID && !s.classes.includes(fileName));
+            if (!findMatchedStudent) return;
+            const { studentName, classes, lastLogin, lastLogout, lastClass, loginTimestamps } = findMatchedStudent;
+            const updatedStudent = { studentId: student.ID, studentName, classes: Array.from(new Set([...classes, fileName])), lastLogin, lastLogout, lastClass, loginTimestamps};
+            // return a promise that resolves when the student is updated in the database
+            return new Promise((resolve, reject) => {
+                fetch(`${URL}/api/students/${updatedStudent.studentId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedStudent)
+                }).then((response) => {
+                    if (response.ok) {
+                        resolve(updatedStudent);
+                    } else {
+                        reject(new Error(`Failed to update student: ${updatedStudent.studentName} with ID: ${updatedStudent.studentId}`));
+                    }
+                }).catch((error) => {
+                    reject(error);
+                });
+            });
+        });
+        console.log("New Students Arr", newStudentsArr);
+        console.log("Matched Students Arr", matchedStudentsArr);
+        Promise.all(newStudentsArr).then((newStudents) => {
+            console.log("New Students Added", newStudents);
+            window.alert("New students added!");
+        }).catch((error) => {
+            console.error("Error adding new students:", error);
+        });
+        Promise.all(matchedStudentsArr).then((updatedStudents) => {
+            console.log("Matched Students Updated", updatedStudents);
+            window.alert("Matched students updated!");
+        }).catch((error) => {
+            console.error("Error updating matched students:", error);
+        });
+        // once all the students are added or updated, window.alert the user
+
+    };
 
     function parseExcel(data) {
         const workbook = XLSX.read(data);
@@ -76,16 +143,20 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             try {
                 readFile(file, parseExcel).then((sheetToJSON) => {
                     setImportedStudents(sheetToJSON);
-                    setMatchedStudents((prevVal) => {
-                        let matchedStudents = [];
-                        for (const student of sheetToJSON) {
-                            let match = students.find((s) => s.studentId === student.ID);
-                            if (match) {
-                                matchedStudents.push({ ...student, ...match });
-                            }
+                    let matchedStudents = [];
+                    let newStudents = [];
+                    for (const student of sheetToJSON) {
+                        let match = students.find((s) => s.studentId === student.ID);
+                        if (match) {
+                            matchedStudents.push({ ...student, ...match });
+                        } else {
+                            newStudents.push({ ...student, ...match });
                         }
-                        return matchedStudents;
-                    });
+                    }
+                    console.log("Matched Students", matchedStudents);
+                    console.log("New Students", newStudents);
+                    setMatchedStudents(matchedStudents);
+                    setNewStudents(newStudents);
                     console.log("Data", sheetToJSON);
                 });
             } catch (error) {
@@ -116,7 +187,13 @@ function ImportStudents({ onImport = () => console.log('onImport function called
         return jsx;
     }
 
-    const rows = importedStudents.map((student) => (
+    const newStudentRows = newStudents.map((student) => (
+        <Table.Tr key={student.ID}>
+            <Table.Td>{student.ID}</Table.Td>
+            <Table.Td>{student.Name}</Table.Td>
+        </Table.Tr>
+    ));
+    const matchedStudentRows = matchedStudents.map((student) => (
         <Table.Tr key={student.ID}>
             <Table.Td>{student.ID}</Table.Td>
             <Table.Td>{student.Name}</Table.Td>
@@ -125,6 +202,15 @@ function ImportStudents({ onImport = () => console.log('onImport function called
 
     useEffect(() => {
         setFileName(file ? file.name.split('.')[0] : null);
+        if (file) {
+            handleImport();
+        } else {
+            setMatchedStudents([]);
+            setImportedStudents([]);
+            setNewStudents([]);
+        }
+        // console all state variables
+        console.log("File", file, "Error", error, "FileName", fileName, "Matched Students", matchedStudents, "New Students", newStudents, "Imported Students", importedStudents, "Students", students);
     }, [file]);
 
     return (
@@ -134,7 +220,7 @@ function ImportStudents({ onImport = () => console.log('onImport function called
                 <FileButton onChange={setFile} accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
                     {(props) => <Button {...props}>Upload File</Button>}
                 </FileButton>
-                <Button onClick={handleImport} disabled={file ? false : true}>Import Students</Button>
+                <Button onClick={onImport} disabled={file ? false : true}>Import Students</Button>
             </Group>
             {file && (
                 <Text size="sm" ta="center" mt="sm">
@@ -146,17 +232,27 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             <Text>Name of Class: {fileName}</Text>
             <Text>Found Students:</Text>
             {/* {(matchedStudents.length > 0) && matchedStudentsJSX()} */}
-            {error ? <Text c="red">{error}</Text> : (
+            {error ? <Text c="red">{error}</Text> : (<>
                 <Table stickyHeader striped verticalSpacing={"md"} captionSide='top' withTableBorder highlightOnHover>
-                    <Table.Caption>{file ? `Students found from ${file.name}` : `Upload a class file to show students here`}</Table.Caption>
+                    <Table.Caption>{file ? `New students found from ${file.name}` : `Upload a class file to show students here`}</Table.Caption>
                     <Table.Thead>
                         <Table.Tr>
                             <Table.Th>ID</Table.Th>
                             <Table.Th>Name</Table.Th>
                         </Table.Tr>
                     </Table.Thead>
-                    <Table.Tbody>{rows}</Table.Tbody>
+                    <Table.Tbody>{newStudentRows}</Table.Tbody>
                 </Table>
+                <Table stickyHeader striped verticalSpacing={"md"} captionSide='top' withTableBorder highlightOnHover>
+                    <Table.Caption>{file ? `Existing students from ${file.name}` : `Upload a class file to show students here`}</Table.Caption>
+                    <Table.Thead>
+                        <Table.Tr>
+                            <Table.Th>ID</Table.Th>
+                            <Table.Th>Name</Table.Th>
+                        </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>{matchedStudentRows}</Table.Tbody>
+                </Table></>
             )}
 
         </div>

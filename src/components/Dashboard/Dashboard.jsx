@@ -8,6 +8,9 @@ import { modals, ModalsProvider } from '@mantine/modals';
 import { URL } from '../../constants';
 import ImportStudents from '../ImportStudents/ImportStudents';
 import { IconTrash, IconSearch } from '@tabler/icons-react';
+
+// import '@mantine/core/styles.css';
+// import '@mantine/dates/styles.css';
 import './Dashboard.css'
 
 
@@ -18,8 +21,8 @@ function Dashboard() {
   const [showAddStudentForm, setShowAddStudentForm] = useState(false);
   const [showEditStudentForm, setShowEditStudentForm] = useState(false);
   const [showTimeLogForm, setShowTimeLogForm] = useState(false);
-  const [showImportStudentsForm, setShowImportStudentsForm] = useState(true); // change this to false before pushing to main
-  const [showDashboard, setShowDashboard] = useState(false); // change this to true before pushing to main
+  const [showImportStudentsForm, setShowImportStudentsForm] = useState(false); // change this to false before pushing to main
+  const [showDashboard, setShowDashboard] = useState(true); // change this to true before pushing to main
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [searchVal, setSearchVal] = useState('');
   const [debounced] = useDebouncedValue(searchVal, 200);
@@ -35,7 +38,7 @@ function Dashboard() {
 
   const handleEdit = (index) => {
     setSelectedStudent(filteredData[index]);
-    setShowEditStudentForm(true);
+    handleDisplay('editStudent');
   };
 
   const handleTimeLog = (index) => {
@@ -99,12 +102,17 @@ function Dashboard() {
       .then(res => {
         if (res.status === "Success") {
           setData([...data, res.student]);
+          window.alert('Student added successfully');
+          handleDisplay();
         }
-        setShowAddStudentForm(false);
+        console.log(res);
+        window.alert('Failed to add student');
+        handleDisplay();
       })
       .catch(error => {
+        window.alert('Failed to add student');
         console.log(error)
-        setShowAddStudentForm(false);
+        handleDisplay('addStudent');
       })
   };
 
@@ -127,7 +135,7 @@ function Dashboard() {
       onCancel: () => console.log('canceled'),
       onConfirm: () => handleDelete(index),
     });
-  
+
   const handleSearch = () => {
     if (debounced) {
       setFilteredData(data.filter(student => student.studentName.toLowerCase().includes(debounced.toLowerCase()) || student.studentId.toLowerCase().includes(debounced.toLowerCase())));
@@ -140,13 +148,13 @@ function Dashboard() {
     handleSearch();
   }, [debounced, data]);
 
-  const handleDisplay = (showState='') => {
+  function handleDisplay(showState = '') {
     setShowAddStudentForm(false);
     setShowEditStudentForm(false);
     setShowTimeLogForm(false);
     setShowImportStudentsForm(false);
     setShowDashboard(false);
-    switch(showState) {
+    switch (showState) {
       case 'addStudent':
         setShowAddStudentForm(true);
         break;
@@ -170,79 +178,79 @@ function Dashboard() {
 
   return (
     <Container size='xl'>
-      <ModalsProvider>
-        <Box sx={{ padding: '20px' }}>
-          <Title order={1}>MLC Admin Home</Title>
-          {showDashboard && (
-            <Box>
+      <Box sx={{ padding: '20px' }}>
+        <Title order={1}>MLC Admin Home</Title>
+        {showDashboard && (
+          <Box>
+            <Box display={"flex"} justify="flex-start">
+              <Button onClick={() => handleDisplay('addStudent')} color="green" variant="filled" style={{}} className='btn-view-log' autoContrast>Add Student</Button>
+              <TextInput
+                placeholder="Search"
+                size="sm"
+                leftSection={<IconSearch />}
+                styles={{ section: { pointerEvents: 'none' } }}
+                mb="sm"
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
+              />
               <Button onClick={() => handleDisplay('importStudents')} color="green" variant="filled" style={{}} className='btn-view-log' autoContrast>Import Students</Button>
-              <Box display={"flex"} justify="flex-start">
-                <Button onClick={() => handleDisplay('addStudent')} color="green" variant="filled" style={{}} className='btn-view-log' autoContrast>Add Student</Button>
-                <TextInput
-                  placeholder="Search"
-                  size="sm"
-                  leftSection={<IconSearch />}
-                  styles={{ section: { pointerEvents: 'none' } }}
-                  mb="sm"
-                  value={searchVal}
-                  onChange={(e) => setSearchVal(e.target.value)}
-                />
-              </Box>
-              <Table striped>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Student ID</th>
-                    <th>Classes</th>
-                    <th>Total Time Logged (hours)</th>
-                    {/* <th>Time Log</th> */}
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody className='students-body'>
-                  {filteredData.map((item, index) => {
-                    const { studentName, studentId, classes, loginTimestamps } = item;
-                    let timePerClassMap = new Map();
-                    loginTimestamps.forEach((timestamp) => {
-                      // console.log('timestamp', timestamp);
-                      if (timePerClassMap.has(timestamp.className)) {
-                        timePerClassMap.set(timestamp.className, timePerClassMap.get(timestamp.className) + timestamp.totalTime);
-                      } else {
-                        timePerClassMap.set(timestamp.className, timestamp.totalTime);
-                      }
-                    });
-                    const formattedTimePerClass = Array.from(timePerClassMap).map(([className, totalTime]) => {
-                      return `${className}: ${(totalTime / 3600).toFixed(2)}`;
-                    });
-                    return (
-                      <tr key={studentId}>
-                        <td>{studentName}</td>
-                        <td>{studentId}</td>
-                        <td>{classes.join(", ")}</td>
-                        {/*<td>{((loginTimestamps.reduce((acc, curr) => curr.totalTime + acc, 0) / 3600)).toFixed(2)}</td>*/}
-                        <td>{formattedTimePerClass.length ? formattedTimePerClass.join(", ") : "No Time Logged"}</td>
-                        <td>
-                          <Group>
-                            <Button onClick={() => handleTimeLog(index)} className='btn-view-log' color="blue" variant="filled" autoContrast>Time Log</Button>
-                            <Button onClick={() => handleEdit(index)} className='btn-edit' color="yellow" variant="filled" autoContrast>Edit Student</Button>
-                            {/* <Button onClick={() => handleDelete(index)}>Delete</Button> */}
-                            <Button onClick={() => openDeleteModal(index)} className='btn-delete' color="red" variant="filled" autoContrast>Delete</Button>
-                          </Group>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </Table>
+              <Button onClick={() => console.log("Export Students")} color="green" variant="filled" style={{}} className='btn-view-log' autoContrast>Export Students</Button>
             </Box>
-          )}
-          {showTimeLogForm && (<TimeLogForm student={selectedStudent} onSave={handleSave} onCancel={cancelView} />)}
-          {showEditStudentForm && (<EditStudentForm student={selectedStudent} onSave={handleSave} onCancel={cancelView} />)}
-          {showAddStudentForm && (<AddStudentForm onSubmit={handleAddStudentSubmit} onCancel={cancelView} />)}
-          {showImportStudentsForm && (<ImportStudents students={data} onCancel={cancelView} />) }
+            <Table striped>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Student ID</th>
+                  <th>Classes</th>
+                  <th>Total Time Logged (hours)</th>
+                  {/* <th>Time Log</th> */}
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody className='students-body'>
+                {filteredData.map((item, index) => {
+                  const { studentName, studentId, classes, loginTimestamps } = item;
+                  let timePerClassMap = new Map();
+                  loginTimestamps.forEach((timestamp) => {
+                    // console.log('timestamp', timestamp);
+                    if (timePerClassMap.has(timestamp.className)) {
+                      timePerClassMap.set(timestamp.className, timePerClassMap.get(timestamp.className) + timestamp.totalTime);
+                    } else {
+                      timePerClassMap.set(timestamp.className, timestamp.totalTime);
+                    }
+                  });
+                  const formattedTimePerClass = Array.from(timePerClassMap).map(([className, totalTime]) => {
+                    return `${className}: ${(totalTime / 3600).toFixed(2)}`;
+                  });
+                  return (
+                    <tr key={studentId}>
+                      <td>{studentName}</td>
+                      <td>{studentId}</td>
+                      <td>{classes.join(", ")}</td>
+                      {/*<td>{((loginTimestamps.reduce((acc, curr) => curr.totalTime + acc, 0) / 3600)).toFixed(2)}</td>*/}
+                      <td>{formattedTimePerClass.length ? formattedTimePerClass.join(", ") : "No Time Logged"}</td>
+                      <td>
+                        <Group>
+                          <Button onClick={() => handleTimeLog(index)} className='btn-view-log' color="blue" variant="filled" autoContrast>Time Log</Button>
+                          <Button onClick={() => handleEdit(index)} className='btn-edit' color="yellow" variant="filled" autoContrast>Edit Student</Button>
+                          {/* <Button onClick={() => handleDelete(index)}>Delete</Button> */}
+                          <Button onClick={() => openDeleteModal(index)} className='btn-delete' color="red" variant="filled" autoContrast>Delete</Button>
+                        </Group>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+          </Box>
+        )}
+        {showTimeLogForm && (<TimeLogForm student={selectedStudent} onSave={handleSave} onCancel={cancelView} />)}
+        {showEditStudentForm && (<EditStudentForm student={selectedStudent} onSave={handleSave} onCancel={cancelView} />)}
+        {showAddStudentForm && (<AddStudentForm onSubmit={handleAddStudentSubmit} onCancel={cancelView} />)}
+        {showImportStudentsForm && (<ImportStudents students={data} onCancel={cancelView} />)}
 
 
-          {/*
+        {/*
           <Modal
           opened={showAddStudentForm}
           onClose={() => setShowAddStudentForm(false)}
@@ -254,7 +262,7 @@ function Dashboard() {
           </Modal>
         */}
 
-          {/*
+        {/*
           <Modal
             opened={showEditStudentForm}
             onClose={() => setShowEditStudentForm(false)}
@@ -266,7 +274,7 @@ function Dashboard() {
           </Modal>
         */}
 
-          {/*
+        {/*
           <Modal
             opened={showTimeLogForm}
             onClose={() => setShowTimeLogForm(false)}
@@ -277,8 +285,7 @@ function Dashboard() {
             <TimeLogForm student={selectedStudent} onSave={handleSave} onCancel={() => setShowTimeLogForm(false)} />
           </Modal>
         */}
-        </Box>
-      </ModalsProvider>
+      </Box>
     </Container>
   )
 }
