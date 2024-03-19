@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Button, FileButton, FileInput, Group, Text, Table } from '@mantine/core';
 import { URL } from '../../constants';
-
+import { modals } from '@mantine/modals';
 
 function parseName(name) {
     if (name === undefined) return '';
@@ -39,10 +39,9 @@ function ImportStudents({ onImport = () => console.log('onImport function called
         console.log("Importing students");
         console.log("New Students", newStudents);
         console.log("Matched Students", matchedStudents);
-        let newFetchPromises = [];
-        let matchedFetchPromises = [];
+
         let newStudentsArr = newStudents.map((student) => {
-            const newStudent = { studentId: student.ID, studentName: student.Name, classes: [fileName] };
+            const newStudent = { studentId: student.ID, studentName: student.Name, classes: [file.name.split('.')[0]] };
             // return a promise that resolves when the student is added to the database
             return new Promise((resolve, reject) => {
                 fetch(`${URL}/api/students`, {
@@ -61,10 +60,10 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             });
         });
         let matchedStudentsArr = matchedStudents.map((student) => {
-            const findMatchedStudent = students.find((s) => s.studentId === student.ID && !s.classes.includes(fileName));
+            const findMatchedStudent = students.find((s) => s.studentId === student.ID && !s.classes.includes(file.name.split('.')[0]));
             if (!findMatchedStudent) return;
             const { studentName, classes, lastLogin, lastLogout, lastClass, loginTimestamps } = findMatchedStudent;
-            const updatedStudent = { studentId: student.ID, studentName, classes: Array.from(new Set([...classes, fileName])), lastLogin, lastLogout, lastClass, loginTimestamps};
+            const updatedStudent = { studentId: student.ID, studentName, classes: Array.from(new Set([...classes, file.name.split('.')[0]])), lastLogin, lastLogout, lastClass, loginTimestamps};
             // return a promise that resolves when the student is updated in the database
             return new Promise((resolve, reject) => {
                 fetch(`${URL}/api/students/${updatedStudent.studentId}`, {
@@ -84,21 +83,41 @@ function ImportStudents({ onImport = () => console.log('onImport function called
         });
         console.log("New Students Arr", newStudentsArr);
         console.log("Matched Students Arr", matchedStudentsArr);
-        Promise.all(newStudentsArr).then((newStudents) => {
-            console.log("New Students Added", newStudents);
-            window.alert("New students added!");
+        // Promise.all(newStudentsArr).then((newStudents) => {
+        //     console.log("New Students Added", newStudents);
+        //     window.alert("New students added!");
+        // }).catch((error) => {
+        //     console.error("Error adding new students:", error);
+        // });
+        // Promise.all(matchedStudentsArr).then((updatedStudents) => {
+        //     console.log("Matched Students Updated", updatedStudents);
+        //     window.alert("Matched students updated!");
+        // }).catch((error) => {
+        //     console.error("Error updating matched students:", error);
+        // });
+        Promise.all([...newStudentsArr, ...matchedStudentsArr]).then(() => {
+            console.log("All students added or updated");
+            window.alert("All students added or updated!");
+            onCancel();
         }).catch((error) => {
-            console.error("Error adding new students:", error);
-        });
-        Promise.all(matchedStudentsArr).then((updatedStudents) => {
-            console.log("Matched Students Updated", updatedStudents);
-            window.alert("Matched students updated!");
-        }).catch((error) => {
-            console.error("Error updating matched students:", error);
+            console.error("Error adding or updating students:", error);
+            onCancel();
         });
         // once all the students are added or updated, window.alert the user
 
     };
+
+    const openModal = () => modals.openConfirmModal({
+        title: 'Please confirm your action',
+        children: (
+          <Text size="sm">
+            This will import all the students listed into the database. Are you sure you want to continue?
+          </Text>
+        ),
+        labels: { confirm: 'Confirm', cancel: 'Cancel' },
+        onCancel: () => console.log('Cancel'),
+        onConfirm: () => onImport(),
+      });
 
     function parseExcel(data) {
         const workbook = XLSX.read(data);
@@ -119,9 +138,9 @@ function ImportStudents({ onImport = () => console.log('onImport function called
                 found = true;
                 nameMatch = match.studentName === studentName;
                 if (nameMatch) {
-                    console.log(match.classes, fileName, match.classes.includes(fileName));
+                    console.log(match.classes, file.name.split('.')[0], match.classes.includes(file.name.split('.')[0]));
                 }
-                hasClass = match.classes.includes(fileName);
+                hasClass = match.classes.includes(file.name.split('.')[0]);
             }
             const parsedStudent = { ID, Name: studentName, found, nameMatch, hasClass };
             console.log("Parsed Student", parsedStudent);
@@ -134,6 +153,7 @@ function ImportStudents({ onImport = () => console.log('onImport function called
         const file = e.target.files[0];
         if (file) {
             setFile(file);
+            // setFileName(file.name.split('.')[0]);
             setError(null);
         }
     };
@@ -146,9 +166,12 @@ function ImportStudents({ onImport = () => console.log('onImport function called
                     let matchedStudents = [];
                     let newStudents = [];
                     for (const student of sheetToJSON) {
+                        console.log("Student", student);
                         let match = students.find((s) => s.studentId === student.ID);
                         if (match) {
-                            matchedStudents.push({ ...student, ...match });
+                            if (!match.classes.includes(file.name.split('.')[0])) {
+                                matchedStudents.push({ ...student, ...match });
+                            }
                         } else {
                             newStudents.push({ ...student, ...match });
                         }
@@ -201,8 +224,10 @@ function ImportStudents({ onImport = () => console.log('onImport function called
     ));
 
     useEffect(() => {
-        setFileName(file ? file.name.split('.')[0] : null);
+        // setFileName(file ? file.name.split('.')[0] : null);
         if (file) {
+            console.log("File", file);
+            // setFileName(file.name.split('.')[0]);
             handleImport();
         } else {
             setMatchedStudents([]);
@@ -210,7 +235,7 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             setNewStudents([]);
         }
         // console all state variables
-        console.log("File", file, "Error", error, "FileName", fileName, "Matched Students", matchedStudents, "New Students", newStudents, "Imported Students", importedStudents, "Students", students);
+        // console.log("File", file, "Error", error, "FileName", fileName, "Matched Students", matchedStudents, "New Students", newStudents, "Imported Students", importedStudents, "Students", students);
     }, [file]);
 
     return (
@@ -220,7 +245,7 @@ function ImportStudents({ onImport = () => console.log('onImport function called
                 <FileButton onChange={setFile} accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
                     {(props) => <Button {...props}>Upload File</Button>}
                 </FileButton>
-                <Button onClick={onImport} disabled={file ? false : true}>Import Students</Button>
+                <Button onClick={openModal} disabled={file ? false : true}>Import Students</Button>
             </Group>
             {file && (
                 <Text size="sm" ta="center" mt="sm">
@@ -229,7 +254,7 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             )}
             {/* <input type="file" onChange={handleFileChange} /> */}
             {error && <Text c="red">{error}</Text>}
-            <Text>Name of Class: {fileName}</Text>
+            <Text>Name of Class: {(file ? file.name.split('.')[0] : '')}</Text>
             <Text>Found Students:</Text>
             {/* {(matchedStudents.length > 0) && matchedStudentsJSX()} */}
             {error ? <Text c="red">{error}</Text> : (<>

@@ -31,7 +31,7 @@ function Dashboard() {
     fetch(`${URL}/api/students`)
       .then(response => response.json())
       .then(data => {
-        if (import.meta.env.MODE === 'development') console.log('data', data);
+        // if (import.meta.env.MODE === 'development') console.log('data', data);
         setData(data)
       })
   }, []);
@@ -63,8 +63,7 @@ function Dashboard() {
       .then(response => response.json())
       .then(data => console.log(data))
       .catch(error => console.log(error))
-    setShowEditStudentForm(false);
-    setShowTimeLogForm(false);
+    handleDisplay();
 
   };
 
@@ -84,10 +83,6 @@ function Dashboard() {
         console.log(error)
         alert('Failed to delete student');
       })
-  };
-
-  const handleAddStudent = () => {
-    setShowAddStudentForm(true);
   };
 
   const handleAddStudentSubmit = (newStudent) => {

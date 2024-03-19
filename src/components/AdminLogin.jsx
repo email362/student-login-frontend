@@ -14,9 +14,9 @@ export default function AdminLogin() {
     const handleLogin = (e) => {
         e.preventDefault();
         if(username === 'admin' && password === 'pass') {
-            console.log('username:', username);
+            // console.log('username:', username);
             setUser("admin");
-            console.log('user:', user);
+            // console.log('user:', user);
             navigate('/admin');
         }
     }
