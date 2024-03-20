@@ -193,7 +193,7 @@ function Dashboard() {
               <Modal opened={opened} onClose={close} title="Export to Spreadsheet">
                 <ExportStudents students={data} />
               </Modal>
-              <Button onClick={open} color="green" variant="filled" style={{}} className='btn-view-log' autoContrast>Export Students</Button>
+              <Button onClick={open} color="green" variant="filled" style={{}} className='btn-view-log' autoContrast>Export Time</Button>
             </Box>
             <Table striped>
               <thead>
