@@ -76,7 +76,7 @@ export default function ExportStudents({ students }) {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${classItem} Students.csv`;
+        a.download = `${classItem} Timesheet.csv`;
         a.click();
     }
 
