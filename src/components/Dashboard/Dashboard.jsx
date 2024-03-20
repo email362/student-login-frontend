@@ -3,7 +3,7 @@ import EditStudentForm from '../EditStudentForm/EditStudentForm';
 import AddStudentForm from '../AddStudentForm/AddStudentForm';
 import TimeLogForm from '../TimeLogForm/TimeLogForm';
 import { Table, Button, Title, Box, Modal, Group, Text, MantineProvider, Container, TextInput } from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
+import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import { modals, ModalsProvider } from '@mantine/modals';
 import { URL } from '../../constants';
 import ImportStudents from '../ImportStudents/ImportStudents';
@@ -12,10 +12,11 @@ import { IconTrash, IconSearch } from '@tabler/icons-react';
 // import '@mantine/core/styles.css';
 // import '@mantine/dates/styles.css';
 import './Dashboard.css'
+import ExportStudents from '../ExportStudents/ExportStudents';
 
 
 function Dashboard() {
-
+  const [opened, { open, close }] = useDisclosure(false);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [showAddStudentForm, setShowAddStudentForm] = useState(false);
@@ -31,7 +32,7 @@ function Dashboard() {
     fetch(`${URL}/api/students`)
       .then(response => response.json())
       .then(data => {
-        // if (import.meta.env.MODE === 'development') console.log('data', data);
+        if (import.meta.env.MODE === 'development') console.log('data', data);
         setData(data)
       })
   }, []);
@@ -129,8 +130,8 @@ function Dashboard() {
       cancelProps: { color: 'black', variant: 'default', autoContrast: true },
       onCancel: () => console.log('canceled'),
       onConfirm: () => handleDelete(index),
-    });
-
+  });
+  
   const handleSearch = () => {
     if (debounced) {
       setFilteredData(data.filter(student => student.studentName.toLowerCase().includes(debounced.toLowerCase()) || student.studentId.toLowerCase().includes(debounced.toLowerCase())));
@@ -189,7 +190,10 @@ function Dashboard() {
                 onChange={(e) => setSearchVal(e.target.value)}
               />
               <Button onClick={() => handleDisplay('importStudents')} color="green" variant="filled" style={{}} className='btn-view-log' autoContrast>Import Students</Button>
-              <Button onClick={() => console.log("Export Students")} color="green" variant="filled" style={{}} className='btn-view-log' autoContrast>Export Students</Button>
+              <Modal opened={opened} onClose={close} title="Export to Spreadsheet">
+                <ExportStudents students={data} />
+              </Modal>
+              <Button onClick={open} color="green" variant="filled" style={{}} className='btn-view-log' autoContrast>Export Students</Button>
             </Box>
             <Table striped>
               <thead>
