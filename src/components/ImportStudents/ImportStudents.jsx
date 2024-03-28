@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import { Button, FileButton, FileInput, Group, Text, Table } from '@mantine/core';
 import { URL } from '../../constants';
 import { modals } from '@mantine/modals';
+import { addStudent, updateStudent } from '../../services/apiServices';
 
 function parseName(name) {
     if (name === undefined) return '';
@@ -44,18 +45,15 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             const newStudent = { studentId: student.ID, studentName: student.Name, classes: [file.name.split('.')[0]] };
             // return a promise that resolves when the student is added to the database
             return new Promise((resolve, reject) => {
-                fetch(`${URL}/api/students`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newStudent)
-                }).then((response) => {
-                    if (response.ok) {
+                addStudent(newStudent).then((response) => {
+                    if (response) {
                         resolve(newStudent);
                     } else {
                         reject(new Error(`Failed to add student: ${newStudent.studentName} with ID: ${newStudent.studentId}`));
                     }
                 }).catch((error) => {
                     reject(error);
+                    window.alert("Error adding new students");
                 });
             });
         });
@@ -66,18 +64,11 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             const updatedStudent = { studentId: student.ID, studentName, classes: Array.from(new Set([...classes, file.name.split('.')[0]])), lastLogin, lastLogout, lastClass, loginTimestamps};
             // return a promise that resolves when the student is updated in the database
             return new Promise((resolve, reject) => {
-                fetch(`${URL}/api/students/${updatedStudent.studentId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedStudent)
-                }).then((response) => {
-                    if (response.ok) {
-                        resolve(updatedStudent);
-                    } else {
-                        reject(new Error(`Failed to update student: ${updatedStudent.studentName} with ID: ${updatedStudent.studentId}`));
-                    }
+                updateStudent(updatedStudent.studentId, updatedStudent).then((response) => {
+                    resolve(updatedStudent);
                 }).catch((error) => {
-                    reject(error);
+                    console.log("Error updating student", error, updatedStudent);
+                    reject("failed in matched students promise",error);
                 });
             });
         });
@@ -95,12 +86,14 @@ function ImportStudents({ onImport = () => console.log('onImport function called
         // }).catch((error) => {
         //     console.error("Error updating matched students:", error);
         // });
-        Promise.all([...newStudentsArr, ...matchedStudentsArr]).then(() => {
+        Promise.all([...newStudentsArr, ...matchedStudentsArr]).then((response) => {
+            console.log("Response", response);
             console.log("All students added or updated");
             window.alert("All students added or updated!");
             onCancel();
         }).catch((error) => {
-            console.error("Error adding or updating students:", error);
+            console.error("Error adding or updating students: in promise all array", error);
+            window.alert("Error adding or updating students", error);
             onCancel();
         });
         // once all the students are added or updated, window.alert the user
