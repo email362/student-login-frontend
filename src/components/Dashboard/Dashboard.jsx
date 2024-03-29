@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import EditStudentForm from '../EditStudentForm/EditStudentForm';
 import AddStudentForm from '../AddStudentForm/AddStudentForm';
 import TimeLogForm from '../TimeLogForm/TimeLogForm';
-import { Table, Button, Title, Box, Modal, Group, Text, MantineProvider, Container, TextInput } from '@mantine/core';
+import { Table, Button, Title, Box, Modal, Group, Text, Container, TextInput } from '@mantine/core';
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
-import { modals, ModalsProvider } from '@mantine/modals';
+import { modals } from '@mantine/modals';
 import { URL } from '../../constants';
 import ImportStudents from '../ImportStudents/ImportStudents';
-import { IconTrash, IconSearch } from '@tabler/icons-react';
+import { IconSearch } from '@tabler/icons-react';
 
 // import '@mantine/core/styles.css';
 // import '@mantine/dates/styles.css';
@@ -77,7 +77,7 @@ function Dashboard() {
     })
       .then(response => response.json())
       .then(data => {
-        console.log('success', studentId)
+        console.log('success', studentId, data);
         setData(newData);
       })
       .catch(error => {
@@ -112,10 +112,6 @@ function Dashboard() {
       })
   };
 
-  const handleCancelAddStudent = () => {
-    setShowAddStudentForm(false);
-  };
-
   const openDeleteModal = (index) =>
     modals.openConfirmModal({
       title: 'Delete Student',
@@ -130,19 +126,19 @@ function Dashboard() {
       cancelProps: { color: 'black', variant: 'default', autoContrast: true },
       onCancel: () => console.log('canceled'),
       onConfirm: () => handleDelete(index),
-  });
-  
-  const handleSearch = () => {
+    });
+
+  const handleSearch = useCallback(() => {
     if (debounced) {
       setFilteredData(data.filter(student => student.studentName.toLowerCase().includes(debounced.toLowerCase()) || student.studentId.toLowerCase().includes(debounced.toLowerCase())));
     } else {
       setFilteredData(data);
     }
-  }
+  }, [debounced, data]);
 
   useEffect(() => {
     handleSearch();
-  }, [debounced, data]);
+  }, [debounced, data, handleSearch]);
 
   function handleDisplay(showState = '') {
     setShowAddStudentForm(false);
@@ -166,7 +162,7 @@ function Dashboard() {
       default:
         setShowDashboard(true);
     }
-  };
+  }
 
   const cancelView = () => {
     handleDisplay();

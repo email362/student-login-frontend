@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Button, FileButton, Group, Text, Table } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { addStudent, updateStudent } from '../../services/apiServices';
+import { useFileReader } from '../../hooks/useFileReader';
 
 function parseName(name) {
     if (name === undefined) return '';
@@ -12,28 +13,29 @@ function parseName(name) {
     return `${firstName} ${lastName}`; // return the first and last name in the correct order
 }
 
-async function readFile(file, callback = data => data) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = e.target.result;
-            resolve(callback(data));
-        };
-        reader.onerror = (e) => {
-            console.log(e);
-            reject(new Error("Failed to read file"));
-        };
-        reader.readAsArrayBuffer(file);
-    });
-}
+// async function readFile(file, callback = data => data) {
+//     return new Promise((resolve, reject) => {
+//         const reader = new FileReader();
+//         reader.onload = (e) => {
+//             const data = e.target.result;
+//             resolve(callback(data));
+//         };
+//         reader.onerror = (e) => {
+//             console.log(e);
+//             reject(new Error("Failed to read file"));
+//         };
+//         reader.readAsArrayBuffer(file);
+//     });
+// }
 
 function ImportStudents({ onImport = () => console.log('onImport function called'), students = null, onCancel }) {
-    const [file, setFile] = useState(null);
-    const [error, setError] = useState(null);
+    // const [file, setFile] = useState(null);
+    // const [error, setError] = useState(null);
     // const [table, setTable] = useState(null);
     const [matchedStudents, setMatchedStudents] = useState([]);
     const [newStudents, setNewStudents] = useState([]);
-    const [importedStudents, setImportedStudents] = useState([]);
+    const { file, error, readFile, handleFileChange } = useFileReader();
+    // const [importedStudents, setImportedStudents] = useState([]);
 
     onImport = () => {
         console.log("Importing students");
@@ -112,12 +114,12 @@ function ImportStudents({ onImport = () => console.log('onImport function called
         onConfirm: () => onImport(),
     });
 
-    function parseExcel(data) {
+    const parseExcel = useCallback((data) => {
         const workbook = XLSX.read(data);
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         let sheetJSON = XLSX.utils.sheet_to_json(sheet);
         if (sheetJSON.length === 0 || sheetJSON[0].ID === undefined || sheetJSON[0].Name === undefined) {
-            setError('Invalid file format');
+            // setError('Invalid file format');
             throw new Error('Invalid file format');
         }
         sheetJSON = sheetJSON.map((student) => {
@@ -140,13 +142,14 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             return parsedStudent;
         });
         return sheetJSON;
-    }
+    }, [file, students]);
 
-    const handleImport = () => {
+    const handleImport = useCallback(() => {
         if (file) {
+            // wrap readFile in useCallback to avoid re-renders
             try {
                 readFile(file, parseExcel).then((sheetToJSON) => {
-                    setImportedStudents(sheetToJSON);
+                    // setImportedStudents(sheetToJSON);
                     let matchedStudents = [];
                     let newStudents = [];
                     for (const student of sheetToJSON) {
@@ -167,13 +170,13 @@ function ImportStudents({ onImport = () => console.log('onImport function called
                     console.log("Data", sheetToJSON);
                 });
             } catch (error) {
-                setError('Failed to read file');
+                // setError('Failed to read file');
                 console.error(error);
             }
         } else {
-            setError('Please select a file');
+            // setError('Please select a file');
         }
-    };
+    }, [file, parseExcel, students, readFile]);
 
     const newStudentRows = newStudents.map((student) => (
         <Table.Tr key={student.ID}>
@@ -196,18 +199,18 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             handleImport();
         } else {
             setMatchedStudents([]);
-            setImportedStudents([]);
+            // setImportedStudents([]);
             setNewStudents([]);
         }
         // console all state variables
         // console.log("File", file, "Error", error, "FileName", fileName, "Matched Students", matchedStudents, "New Students", newStudents, "Imported Students", importedStudents, "Students", students);
-    }, [file]);
+    }, [file, handleImport]);
 
     return (
         <div>
             <Group justify='center'>
                 <Button onClick={onCancel}>Cancel</Button>
-                <FileButton onChange={setFile} accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                <FileButton onChange={handleFileChange} accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
                     {(props) => <Button {...props}>Upload File</Button>}
                 </FileButton>
                 <Button onClick={openModal} disabled={file ? false : true}>Import Students</Button>

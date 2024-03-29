@@ -6,7 +6,7 @@ import { secondsToHoursMinutesSeconds } from "../../utilities/time";
  *
  * @component
  * @param {Object} props - The component props.
- * @param {Array} props.students - The array of student objects.
+ * @param {Object[]} props.students - The array of student objects.
  * @returns {JSX.Element} The ExportStudents component.
  */
 export default function ExportStudents({ students }) {
