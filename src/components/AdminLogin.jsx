@@ -6,14 +6,14 @@ import { useNavigate } from "react-router-dom";
 
 export default function AdminLogin() {
 
-    const { user, setUser } = useContext(AdminAuthContext);
+    const { setUser } = useContext(AdminAuthContext);
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if(username === import.meta.env.VITE_ADMIN_USER && password === import.meta.env.VITE_ADMIN_PASSWORD) {
+        if (username === import.meta.env.VITE_ADMIN_USER && password === import.meta.env.VITE_ADMIN_PASSWORD) {
             // console.log('username:', username);
             setUser("admin");
             // console.log('user:', user);
