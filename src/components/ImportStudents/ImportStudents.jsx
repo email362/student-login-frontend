@@ -5,6 +5,12 @@ import { modals } from '@mantine/modals';
 import { addStudent, updateStudent } from '../../services/apiServices';
 import { useFileReader } from '../../hooks/useFileReader';
 
+/**
+ * Parses a name string in the format of "Last, First" and returns a name string in the format of "First Last".
+ *
+ * @param {string} name - Name formatted as "Lastname, Firstname"
+ * @returns {string} The space separated first and last name "First Last"
+ */
 function parseName(name) {
     if (name === undefined) return '';
     const fullName = name.split(','); // split the name into an array
@@ -13,29 +19,20 @@ function parseName(name) {
     return `${firstName} ${lastName}`; // return the first and last name in the correct order
 }
 
-// async function readFile(file, callback = data => data) {
-//     return new Promise((resolve, reject) => {
-//         const reader = new FileReader();
-//         reader.onload = (e) => {
-//             const data = e.target.result;
-//             resolve(callback(data));
-//         };
-//         reader.onerror = (e) => {
-//             console.log(e);
-//             reject(new Error("Failed to read file"));
-//         };
-//         reader.readAsArrayBuffer(file);
-//     });
-// }
-
+/**
+ * Component for importing students from a file.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {Function} props.onImport - The function to be called when importing students. Defaults to logging a message to the console.
+ * @param {Array} props.students - The array of existing students.
+ * @param {Function} props.onCancel - The function to be called when canceling the import.
+ * @returns {JSX.Element} The ImportStudents component.
+ */
 function ImportStudents({ onImport = () => console.log('onImport function called'), students = null, onCancel }) {
-    // const [file, setFile] = useState(null);
-    // const [error, setError] = useState(null);
-    // const [table, setTable] = useState(null);
     const [matchedStudents, setMatchedStudents] = useState([]);
     const [newStudents, setNewStudents] = useState([]);
     const { file, error, readFile, handleFileChange } = useFileReader();
-    // const [importedStudents, setImportedStudents] = useState([]);
 
     onImport = () => {
         console.log("Importing students");
@@ -76,18 +73,7 @@ function ImportStudents({ onImport = () => console.log('onImport function called
         });
         console.log("New Students Arr", newStudentsArr);
         console.log("Matched Students Arr", matchedStudentsArr);
-        // Promise.all(newStudentsArr).then((newStudents) => {
-        //     console.log("New Students Added", newStudents);
-        //     window.alert("New students added!");
-        // }).catch((error) => {
-        //     console.error("Error adding new students:", error);
-        // });
-        // Promise.all(matchedStudentsArr).then((updatedStudents) => {
-        //     console.log("Matched Students Updated", updatedStudents);
-        //     window.alert("Matched students updated!");
-        // }).catch((error) => {
-        //     console.error("Error updating matched students:", error);
-        // });
+
         Promise.all([...newStudentsArr, ...matchedStudentsArr]).then((response) => {
             console.log("Response", response);
             console.log("All students added or updated");
@@ -114,6 +100,13 @@ function ImportStudents({ onImport = () => console.log('onImport function called
         onConfirm: () => onImport(),
     });
 
+    /**
+     * Parses the Excel data and returns an array of parsed student objects.
+     *
+     * @param {any} data - The Excel data to be parsed.
+     * @returns {Array} - An array of parsed student objects.
+     * @throws {Error} - If the file format is invalid.
+     */
     const parseExcel = useCallback((data) => {
         const workbook = XLSX.read(data);
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -144,6 +137,12 @@ function ImportStudents({ onImport = () => console.log('onImport function called
         return sheetJSON;
     }, [file, students]);
 
+    /**
+     * Handles the import of students from a file.
+     * 
+     * @function handleImport
+     * @returns {void}
+     */
     const handleImport = useCallback(() => {
         if (file) {
             // wrap readFile in useCallback to avoid re-renders
@@ -170,11 +169,8 @@ function ImportStudents({ onImport = () => console.log('onImport function called
                     console.log("Data", sheetToJSON);
                 });
             } catch (error) {
-                // setError('Failed to read file');
                 console.error(error);
             }
-        } else {
-            // setError('Please select a file');
         }
     }, [file, parseExcel, students, readFile]);
 
@@ -192,18 +188,13 @@ function ImportStudents({ onImport = () => console.log('onImport function called
     ));
 
     useEffect(() => {
-        // setFileName(file ? file.name.split('.')[0] : null);
         if (file) {
             console.log("File", file);
-            // setFileName(file.name.split('.')[0]);
             handleImport();
         } else {
             setMatchedStudents([]);
-            // setImportedStudents([]);
             setNewStudents([]);
         }
-        // console all state variables
-        // console.log("File", file, "Error", error, "FileName", fileName, "Matched Students", matchedStudents, "New Students", newStudents, "Imported Students", importedStudents, "Students", students);
     }, [file, handleImport]);
 
     return (
@@ -220,7 +211,6 @@ function ImportStudents({ onImport = () => console.log('onImport function called
                     Picked file: {file.name}
                 </Text>
             )}
-            {/* <input type="file" onChange={handleFileChange} /> */}
             {error && <Text c="red">{error}</Text>}
             <Text>Name of Class: {(file ? file.name.split('.')[0] : '')}</Text>
             <Text>Found Students:</Text>
