@@ -6,7 +6,13 @@ export const addStudent = async (newStudent) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newStudent)
     });
-    return await response.json();
+    const data = await response.json();
+    console.log("addStudent data: ", data);
+    if(data.status == "Success") {
+        return data;
+    } else {
+        throw new Error("Failed to add student in addStudent " + data.message);
+    }
 };
 
 export const updateStudent = async (studentId, updatedStudent) => {
