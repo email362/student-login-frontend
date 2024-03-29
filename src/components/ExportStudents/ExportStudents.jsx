@@ -1,6 +1,14 @@
 import { Button, Select, Text } from "@mantine/core";
 import { useState } from "react";
 import { secondsToHoursMinutesSeconds } from "../../utilities/time";
+/**
+ * Component for exporting students' data to a CSV file.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {Array} props.students - The array of student objects.
+ * @returns {JSX.Element} The ExportStudents component.
+ */
 export default function ExportStudents({ students }) {
 
     const [value, setValue] = useState('');
