@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
-import { Button, FileButton, FileInput, Group, Text, Table } from '@mantine/core';
-import { URL } from '../../constants';
+import { Button, FileButton, Group, Text, Table } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { addStudent, updateStudent } from '../../services/apiServices';
 
@@ -11,7 +10,7 @@ function parseName(name) {
     const lastName = fullName[0].trim(); // get the first element and remove any leading or trailing spaces
     const firstName = fullName[1].trim(); // get the second element and remove any leading or trailing spaces
     return `${firstName} ${lastName}`; // return the first and last name in the correct order
-};
+}
 
 async function readFile(file, callback = data => data) {
     return new Promise((resolve, reject) => {
@@ -21,17 +20,17 @@ async function readFile(file, callback = data => data) {
             resolve(callback(data));
         };
         reader.onerror = (e) => {
+            console.log(e);
             reject(new Error("Failed to read file"));
         };
         reader.readAsArrayBuffer(file);
     });
-};
+}
 
 function ImportStudents({ onImport = () => console.log('onImport function called'), students = null, onCancel }) {
     const [file, setFile] = useState(null);
     const [error, setError] = useState(null);
     // const [table, setTable] = useState(null);
-    const [fileName, setFileName] = useState(null);
     const [matchedStudents, setMatchedStudents] = useState([]);
     const [newStudents, setNewStudents] = useState([]);
     const [importedStudents, setImportedStudents] = useState([]);
@@ -61,14 +60,15 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             const findMatchedStudent = students.find((s) => s.studentId === student.ID && !s.classes.includes(file.name.split('.')[0]));
             if (!findMatchedStudent) return;
             const { studentName, classes, lastLogin, lastLogout, lastClass, loginTimestamps } = findMatchedStudent;
-            const updatedStudent = { studentId: student.ID, studentName, classes: Array.from(new Set([...classes, file.name.split('.')[0]])), lastLogin, lastLogout, lastClass, loginTimestamps};
+            const updatedStudent = { studentId: student.ID, studentName, classes: Array.from(new Set([...classes, file.name.split('.')[0]])), lastLogin, lastLogout, lastClass, loginTimestamps };
             // return a promise that resolves when the student is updated in the database
             return new Promise((resolve, reject) => {
                 updateStudent(updatedStudent.studentId, updatedStudent).then((response) => {
+                    console.log(response);
                     resolve(updatedStudent);
                 }).catch((error) => {
                     console.log("Error updating student", error, updatedStudent);
-                    reject("failed in matched students promise",error);
+                    reject("failed in matched students promise", error);
                 });
             });
         });
@@ -103,14 +103,14 @@ function ImportStudents({ onImport = () => console.log('onImport function called
     const openModal = () => modals.openConfirmModal({
         title: 'Please confirm your action',
         children: (
-          <Text size="sm">
-            This will import all the students listed into the database. Are you sure you want to continue?
-          </Text>
+            <Text size="sm">
+                This will import all the students listed into the database. Are you sure you want to continue?
+            </Text>
         ),
         labels: { confirm: 'Confirm', cancel: 'Cancel' },
         onCancel: () => console.log('Cancel'),
         onConfirm: () => onImport(),
-      });
+    });
 
     function parseExcel(data) {
         const workbook = XLSX.read(data);
@@ -140,16 +140,7 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             return parsedStudent;
         });
         return sheetJSON;
-    };
-
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setFile(file);
-            // setFileName(file.name.split('.')[0]);
-            setError(null);
-        }
-    };
+    }
 
     const handleImport = () => {
         if (file) {
@@ -183,25 +174,6 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             setError('Please select a file');
         }
     };
-
-    // function that produces jsx for the matched students
-    const matchedStudentsJSX = () => {
-        let jsx = [];
-        if (matchedStudents.length > 0) {
-            // console.log("Matched Students", matchedStudents);
-            for (const student of matchedStudents) {
-                const { ID, studentName, Name, classes } = student;
-                const classesStr = classes.join(',');
-                jsx.push(
-                    <div key={ID}>
-                        <Text>{`${ID} ${studentName} ${Name}`}</Text>
-                        <Text>Classes: {classesStr}</Text>
-                    </div>
-                );
-            }
-        }
-        return jsx;
-    }
 
     const newStudentRows = newStudents.map((student) => (
         <Table.Tr key={student.ID}>
@@ -249,7 +221,6 @@ function ImportStudents({ onImport = () => console.log('onImport function called
             {error && <Text c="red">{error}</Text>}
             <Text>Name of Class: {(file ? file.name.split('.')[0] : '')}</Text>
             <Text>Found Students:</Text>
-            {/* {(matchedStudents.length > 0) && matchedStudentsJSX()} */}
             {error ? <Text c="red">{error}</Text> : (<>
                 <Table stickyHeader striped verticalSpacing={"md"} captionSide='top' withTableBorder highlightOnHover>
                     <Table.Caption>{file ? `New students found from ${file.name}` : `Upload a class file to show students here`}</Table.Caption>
