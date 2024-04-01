@@ -1,23 +1,16 @@
 import { TextInput, Button, Card, Box, Text, Paper, Grid, Title, Group, Stack } from '@mantine/core';
 import { IconTrash } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
-import { URL } from '@src/constants';
+import { getStudent } from '@src/services/apiServices';
 
 const studentExists = async (studentId) => {
-    let response = null;
-    let json = null;
     try {
-        response = await fetch(`${URL}/api/student?studentId=${studentId}`);
-    } catch (respErr) {
-        console.log("response error", respErr);
+        const student = await getStudent(studentId);
+        return !!student;
+    } catch (error) {
+        return false;
     }
-    try {
-        json = await response.json();
-    } catch (jsonErr) {
-        console.log("json error", jsonErr);
-    }
-    return (json == null ? false : true);
-}
+};
 
 const AddStudentForm = ({ onSubmit, onCancel }) => {
 
