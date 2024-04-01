@@ -1,6 +1,6 @@
 import { Button, Select, Text } from "@mantine/core";
 import { useState } from "react";
-import { secondsToHoursMinutesSeconds } from "../../utilities/time";
+import { secondsToHoursMinutesSeconds } from "@utilities/time";
 /**
  * Component for exporting students' data to a CSV file.
  *

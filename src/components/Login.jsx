@@ -1,6 +1,6 @@
 import axios from 'axios';
-import React, { useState } from 'react';
-import { URL } from '../constants';
+import { useState } from 'react';
+import { URL } from '@src/constants';
 import { TextInput, Button, Title, Box, Notification } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,14 +18,14 @@ const Login = () => {
     };
 
     const handleGetStudent = async () => {
-        if(studentId === '') {
+        if (studentId === '') {
             handleLoginStatus('Please enter a student ID.');
             return;
         }
         try {
             setLoginStatus('Logging in...');
-            const response = await axios.get(`${URL}/api/student`, { params: {studentId: studentId} });
-            if(response.data === null) {
+            const response = await axios.get(`${URL}/api/student`, { params: { studentId: studentId } });
+            if (response.data === null) {
                 setLoginStatus("No Language Classes found. Please see MLC Staff.");
                 console.log("response.data is null");
                 return;

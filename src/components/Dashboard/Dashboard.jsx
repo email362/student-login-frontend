@@ -1,18 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
-import EditStudentForm from '../EditStudentForm/EditStudentForm';
-import AddStudentForm from '../AddStudentForm/AddStudentForm';
-import TimeLogForm from '../TimeLogForm/TimeLogForm';
+import EditStudentForm from '@components/EditStudentForm/EditStudentForm';
+import AddStudentForm from '@components/AddStudentForm/AddStudentForm';
+import TimeLogForm from '@components/TimeLogForm/TimeLogForm';
 import { Table, Button, Title, Box, Modal, Group, Text, Container, TextInput } from '@mantine/core';
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
-import { URL } from '../../constants';
-import ImportStudents from '../ImportStudents/ImportStudents';
+import { URL } from '@src/constants';
+import ImportStudents from '@components/ImportStudents/ImportStudents';
 import { IconSearch } from '@tabler/icons-react';
 
-// import '@mantine/core/styles.css';
-// import '@mantine/dates/styles.css';
 import './Dashboard.css'
-import ExportStudents from '../ExportStudents/ExportStudents';
+import ExportStudents from '@components/ExportStudents/ExportStudents';
 
 
 function Dashboard() {
@@ -244,42 +242,6 @@ function Dashboard() {
         {showAddStudentForm && (<AddStudentForm onSubmit={handleAddStudentSubmit} onCancel={cancelView} />)}
         {showImportStudentsForm && (<ImportStudents students={data} onCancel={cancelView} />)}
 
-
-        {/*
-          <Modal
-          opened={showAddStudentForm}
-          onClose={() => setShowAddStudentForm(false)}
-          title="Add Student"
-          centered
-          size='auto'
-          >
-          <AddStudentForm onSubmit={handleAddStudentSubmit} onCancel={handleCancelAddStudent} />
-          </Modal>
-        */}
-
-        {/*
-          <Modal
-            opened={showEditStudentForm}
-            onClose={() => setShowEditStudentForm(false)}
-            title="Edit Student"
-            centered
-            size='auto'
-          >
-            <EditStudentForm student={selectedStudent} onSave={handleSave} onCancel={() => setShowEditStudentForm(false)} />
-          </Modal>
-        */}
-
-        {/*
-          <Modal
-            opened={showTimeLogForm}
-            onClose={() => setShowTimeLogForm(false)}
-            title="Time Log"
-            centered
-            size='auto'
-          >
-            <TimeLogForm student={selectedStudent} onSave={handleSave} onCancel={() => setShowTimeLogForm(false)} />
-          </Modal>
-        */}
       </Box>
     </Container>
   )

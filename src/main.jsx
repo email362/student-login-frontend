@@ -1,19 +1,19 @@
-import React, {createContext, useContext} from 'react'
+import React, { createContext, useContext } from 'react'
 import ReactDOM from 'react-dom/client'
-import { Button, MantineProvider, Modal } from '@mantine/core'
-import { createBrowserRouter, RouterProvider, useParams, Navigate } from 'react-router-dom'
-import App from './App.jsx'
-import Login from './components/Login.jsx'
-import ErrorPage from './error-page.jsx'
+import { MantineProvider } from '@mantine/core'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import App from '@src/App.jsx'
+import Login from '@components/Login.jsx'
+import ErrorPage from '@src/error-page.jsx'
 
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import './index.css'
-import Classes, { loader as studentLoader } from './components/Classes.jsx'
-import AdminLogin from './components/AdminLogin.jsx'
-import Admin from './components/Admin.jsx'
-import AdminContextProvider from './components/AdminContextProvider.jsx'
-import Dashboard from './components/Dashboard/Dashboard.jsx'
+import Classes from '@components/Classes.jsx'
+import AdminLogin from '@components/AdminLogin.jsx'
+import AdminContextProvider from '@components/AdminContextProvider.jsx'
+import Dashboard from '@components/Dashboard/Dashboard.jsx'
+import { studentLoader } from '@services/loaders/studentLoader'
 
 
 
@@ -23,7 +23,7 @@ import { ModalsProvider } from '@mantine/modals'
 
 dayjs.extend(customParseFormat);
 
-export const AdminAuthContext = createContext({ user: null, setUser: (item) => {}});
+export const AdminAuthContext = createContext({ user: null, setUser: () => { } });
 
 function AdminAuth({ children, redirectTo }) {
   const { user } = useContext(AdminAuthContext);
@@ -50,7 +50,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { path: '/students/:studentId', element: <Classes />, loader: studentLoader },
-      { path: '/', element: <Login />},
+      { path: '/', element: <Login /> },
       // { path: '/admin', element: <Admin />}
     ]
   },
@@ -85,13 +85,15 @@ const router = createBrowserRouter([
   // },
 ]);
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+root.render(
   <React.StrictMode>
     <MantineProvider withGlobalStyles withNormalizeCSS defaultColorScheme='auto'>
       <ModalsProvider>
-      <AdminContextProvider>
-        <RouterProvider router={router} />
-      </AdminContextProvider>
+        <AdminContextProvider>
+          <RouterProvider router={router} />
+        </AdminContextProvider>
       </ModalsProvider>
     </MantineProvider>
   </React.StrictMode>,

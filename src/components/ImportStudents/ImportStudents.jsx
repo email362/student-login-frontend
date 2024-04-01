@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Button, FileButton, Group, Text, Table } from '@mantine/core';
 import { modals } from '@mantine/modals';
-import { addStudent, updateStudent } from '../../services/apiServices';
-import { useFileReader } from '../../hooks/useFileReader';
+import { addStudent, updateStudent } from '@services/apiServices';
+import { useFileReader } from '@hooks/useFileReader';
 
 /**
  * Parses a name string in the format of "Last, First" and returns a name string in the format of "First Last".
@@ -20,12 +20,36 @@ function parseName(name) {
 }
 
 /**
+ * 
+ * 
+ * @typedef {Object} Timestamp
+ * @property {string} className - The name of the class.
+ * @property {Date} loginTime - The login time of the student in unix time.
+ * @property {Date} logoutTime - The logout time of the student in unix time.
+ * @property {number} totalTime - The total time the student spent in the class in seconds.
+ * 
+ */
+
+/**
+ * The Student object definition for the students array.
+ * 
+ * @typedef {Object} Student
+ * @property {string} studentId - The ID of the student.
+ * @property {string} studentName - The name of the student.
+ * @property {String[]} classes - The classes the student is enrolled in.
+ * @property {Date} lastLogin - The last login time of the student in unix time.
+ * @property {Date} lastLogout - The last logout time of the student in unix time.
+ * @property {string} lastClass - The last class the student attended.
+ * @property {Timestamp[]} loginTimestamps - The login timestamps of the student.
+ */
+
+/**
  * Component for importing students from a file.
  *
  * @component
  * @param {Object} props - The component props.
  * @param {Function} props.onImport - The function to be called when importing students. Defaults to logging a message to the console.
- * @param {Array} props.students - The array of existing students.
+ * @param {Student[]} props.students - The array of existing students.
  * @param {Function} props.onCancel - The function to be called when canceling the import.
  * @returns {JSX.Element} The ImportStudents component.
  */

@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
-import { TextInput, Button, Card, Box, Text, Paper, Grid, Title, Group, Stack, Divider } from '@mantine/core';
+import { TextInput, Button, Card, Box, Text, Paper, Grid, Title, Group, Stack } from '@mantine/core';
 import { IconTrash } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
-import { randomId } from '@mantine/hooks';
-import { URL } from '../../constants';
+import { URL } from '@src/constants';
 
 const studentExists = async (studentId) => {
     let response = null;
