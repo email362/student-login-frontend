@@ -98,10 +98,10 @@ function Dashboard() {
           setData([...data, res.student]);
           window.alert('Student added successfully');
           handleDisplay();
+        } else {
+          window.alert('Failed to add student');
+          handleDisplay('addStudent');
         }
-        console.log(res);
-        window.alert('Failed to add student');
-        handleDisplay();
       })
       .catch(error => {
         window.alert('Failed to add student');
