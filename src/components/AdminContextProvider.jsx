@@ -1,6 +1,6 @@
 
-import React, { createContext, useState } from 'react';
-import { AdminAuthContext } from '../main';
+import { useState } from 'react';
+import { AdminAuthContext } from '@src/main';
 
 
 export default function AdminContextProvider({ children }) {

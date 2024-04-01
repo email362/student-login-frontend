@@ -1,33 +1,17 @@
-import React, { useState } from 'react';
 import {
-    Container,
     TextInput,
     Button,
     Title,
     Box,
     Group,
     Stack,
-    Paper,
     Card,
-    Grid,
-    Divider,
-    ActionIcon,
     Select,
-    Text,
-    // Modal
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { randomId } from '@mantine/hooks';
-import { DateTimePicker, DateInput, TimeInput } from '@mantine/dates';
-import {
-    getTotalTime,
-    secondsToHoursMinutesSeconds,
-    parseHoursMinutesSeconds,
-    hoursMinutesSecondsToSeconds,
-    createDateTime,
-    convertToInputDate,
-    convertToInputTime
-} from '../../utilities/time.js';
+import { DateTimePicker } from '@mantine/dates';
+import { secondsToHoursMinutesSeconds } from '@utilities/time.js';
 import { IconTrash } from '@tabler/icons-react';
 import "./TimeLogForm.css";
 
@@ -108,10 +92,10 @@ function TimeLogForm({ student, onSave, onCancel }) {
         if (student.classes) {
             data = new Set([...student.classes]);
         }
-        if (!timeLog.hasOwnProperty('_id')) {
+        if (!Object.prototype.hasOwnProperty.call(timeLog, '_id')) {
             timeLog._id = randomId();
         }
-        if (timeLog.hasOwnProperty('_id') && timeLog._id !== '' && timeLog._id !== null) {
+        if (Object.prototype.hasOwnProperty.call(timeLog, '_id') && timeLog._id !== '' && timeLog._id !== null) {
             let matchingTimeStamp = student.loginTimestamps.find((time) => time._id === timeLog._id);
             if (matchingTimeStamp) {
                 data.add(matchingTimeStamp.className);
@@ -121,7 +105,7 @@ function TimeLogForm({ student, onSave, onCancel }) {
         const border = (timeLog.totalTime == 0) ? '1px solid red' : 'default';
         return (
             <Box key={`timelog-${timeLog._id}`}>
-                <Card shadow='sm' p='xs' mb='sm' style={{ border: border}}>
+                <Card shadow='sm' p='xs' mb='sm' style={{ border: border }}>
                     <Group justify='space-between'>
                         <Select
                             data={data}
@@ -205,96 +189,6 @@ function TimeLogForm({ student, onSave, onCancel }) {
             </form>
         </Box>
     );
-}
-
-function oldTimeLog({ student, onSave, onCancel }) {
-    // const [timeStamps, setTimeStamps] = useState(student.loginTimestamps);
-
-    // console.log(timeStamps);
-
-    /**
-     * Removes a time log from the list of time stamps.
-     * @param {number} index - The index of the time log to remove.
-    */
-    const handleRemoveTimeLog = (index) => {
-        const newTimeStamps = [...timeStamps];
-        newTimeStamps.splice(index, 1);
-        setTimeStamps(newTimeStamps);
-        form.removeListItem('timeStamps', index);
-        // console.log(newTimeStamps);
-    };
-
-    /**
-     * Handles the change event of the class select input.
-     * @param {Object} event - The event object.
-    */
-    const handleClassChange = (event) => {
-        const updatedClass = event.target.value;
-        // rest of the function code
-    };
-
-    /**
-     * Handles changes to the time stamp inputs and calculates the total time.
-     * @param {Event} event - The event object.
-    */
-    const handleTimeStampChange = (event) => {
-        const parentDiv = event.target.parentNode.parentNode;
-        // const id = parentDiv.getAttribute('data-id');
-        // console.log(event.target.value);
-        // console.log(event.target.className);
-        let loginObj = {
-            date: event.target.className === 'login-date-value' ? event.target.value : String(parentDiv.querySelector('label input.login-date-value').value),
-            time: event.target.className === 'login-time-value' ? event.target.value : String(parentDiv.querySelector('label input.login-time-value').value),
-        };
-        let logoutObj = {
-            date: event.target.className === 'logout-date-value' ? event.target.value : String(parentDiv.querySelector('label input.logout-date-value').value),
-            time: event.target.className === 'logout-time-value' ? event.target.value : String(parentDiv.querySelector('label input.logout-time-value').value)
-        };
-
-        const totalTime = getTotalTime(loginObj, logoutObj);
-        const formattedTotalTime = secondsToHoursMinutesSeconds(totalTime);
-        parentDiv.querySelector('label input.total-time-value').value = formattedTotalTime;
-    };
-
-    /**
-     * Handles the form submission for the TimeLogForm component.
-     * @param {Event} event - The form submission event.
-    */
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        const docs = document.querySelectorAll('div[data-id]');
-        let updatedTimeStamps = [];
-        docs.forEach((doc) => {
-            // const id = doc.getAttribute('data-id');
-            console.log(doc);
-            const className = doc.querySelector('input.class-value').value;
-            const loginTime = doc.querySelector('input.login-time-value').value;
-            const loginDate = doc.querySelector('input.login-date-value').value;
-            const logoutTime = doc.querySelector('input.logout-time-value').value;
-            const logoutDate = doc.querySelector('input.logout-date-value').value;
-            const totalTime = doc.querySelector('div.total-time-value div input').value;
-
-            const { hours, minutes, seconds } = parseHoursMinutesSeconds(totalTime);
-            const newTotalTime = hoursMinutesSecondsToSeconds(hours, minutes, seconds);
-            const loginUnixTime = createDateTime(loginDate, loginTime).getTime();
-            const logoutUnixTime = createDateTime(logoutDate, logoutTime).getTime();
-
-            const updatedTimeLog = {
-                className,
-                loginTime: loginUnixTime,
-                logoutTime: logoutUnixTime,
-                totalTime: newTotalTime
-            };
-
-            // console.log(updatedTimeLog);
-            updatedTimeStamps.push(updatedTimeLog);
-
-        });
-        setTimeStamps(updatedTimeStamps);
-        const updatedStudent = { ...student, loginTimestamps: updatedTimeStamps };
-        console.log(JSON.stringify(updatedStudent));
-        onSave(updatedStudent);
-    };
 }
 
 export default TimeLogForm;

@@ -1,21 +1,21 @@
-import { useEffect, useState } from 'react'
-import EditStudentForm from '../EditStudentForm/EditStudentForm';
-import AddStudentForm from '../AddStudentForm/AddStudentForm';
-import TimeLogForm from '../TimeLogForm/TimeLogForm';
-import { Table, Button, Title, Box, Modal, Group, Text, MantineProvider, Container, TextInput } from '@mantine/core';
+import { useCallback, useEffect, useState } from 'react'
+import EditStudentForm from '@components/EditStudentForm/EditStudentForm';
+import AddStudentForm from '@components/AddStudentForm/AddStudentForm';
+import TimeLogForm from '@components/TimeLogForm/TimeLogForm';
+import { Table, Button, Title, Box, Modal, Group, Text, Container, TextInput } from '@mantine/core';
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
-import { modals, ModalsProvider } from '@mantine/modals';
-import { URL } from '../../constants';
-import ImportStudents from '../ImportStudents/ImportStudents';
-import { IconTrash, IconSearch } from '@tabler/icons-react';
+import { modals } from '@mantine/modals';
+import ImportStudents from '@components/ImportStudents/ImportStudents';
+import { IconSearch } from '@tabler/icons-react';
 
-// import '@mantine/core/styles.css';
-// import '@mantine/dates/styles.css';
 import './Dashboard.css'
-import ExportStudents from '../ExportStudents/ExportStudents';
+import ExportStudents from '@components/ExportStudents/ExportStudents';
+import { useLoaderData } from 'react-router-dom';
+import { addStudent, deleteStudent, updateStudent } from '@src/services/apiServices';
 
 
 function Dashboard() {
+  const students = useLoaderData();
   const [opened, { open, close }] = useDisclosure(false);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -29,13 +29,10 @@ function Dashboard() {
   const [debounced] = useDebouncedValue(searchVal, 200);
 
   useEffect(() => {
-    fetch(`${URL}/api/students`)
-      .then(response => response.json())
-      .then(data => {
-        if (import.meta.env.MODE === 'development') console.log('data', data);
-        setData(data)
-      })
-  }, []);
+    console.log('students', students);
+    setData(students);
+    setFilteredData(students);
+  }, [students]);
 
   const handleEdit = (index) => {
     setSelectedStudent(filteredData[index]);
@@ -52,33 +49,30 @@ function Dashboard() {
     const newData = [...data];
     const index = newData.findIndex(student => student.studentId === updatedStudent.studentId);
     newData[index] = updatedStudent;
-    setData(newData);
+    // setData(newData);
     // send the updated data to the server
-    fetch(`${URL}/api/students/${updatedStudent.studentId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(updatedStudent)
-    })
-      .then(response => response.json())
-      .then(data => console.log(data))
-      .catch(error => console.log(error))
-    handleDisplay();
-
+    updateStudent(updatedStudent.studentId, updatedStudent)
+      .then(data => {
+        console.log('success', data);
+        setData(newData);
+        window.alert(data.message)
+        handleDisplay();
+      })
+      .catch(error => {
+        console.log(error);
+        window.alert('Failed to update student');
+      });
   };
 
   const handleDelete = (index) => {
     const studentId = filteredData[index].studentId;
     const newData = data.filter(student => student.studentId !== studentId);
     // delete the student from the server
-    fetch(`${URL}/api/students/${studentId}`, {
-      method: 'DELETE'
-    })
-      .then(response => response.json())
+    deleteStudent(studentId)
       .then(data => {
-        console.log('success', studentId)
+        console.log('success', studentId, data);
         setData(newData);
+        window.alert(data.message);
       })
       .catch(error => {
         console.log(error)
@@ -87,33 +81,22 @@ function Dashboard() {
   };
 
   const handleAddStudentSubmit = (newStudent) => {
-    fetch(`${URL}/api/students`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newStudent)
-    })
-      .then(response => response.json())
+    addStudent(newStudent)
       .then(res => {
         if (res.status === "Success") {
           setData([...data, res.student]);
           window.alert('Student added successfully');
           handleDisplay();
+        } else {
+          window.alert('Failed to add student');
+          handleDisplay('addStudent');
         }
-        console.log(res);
-        window.alert('Failed to add student');
-        handleDisplay();
       })
       .catch(error => {
         window.alert('Failed to add student');
         console.log(error)
         handleDisplay('addStudent');
       })
-  };
-
-  const handleCancelAddStudent = () => {
-    setShowAddStudentForm(false);
   };
 
   const openDeleteModal = (index) =>
@@ -130,19 +113,19 @@ function Dashboard() {
       cancelProps: { color: 'black', variant: 'default', autoContrast: true },
       onCancel: () => console.log('canceled'),
       onConfirm: () => handleDelete(index),
-  });
-  
-  const handleSearch = () => {
+    });
+
+  const handleSearch = useCallback(() => {
     if (debounced) {
       setFilteredData(data.filter(student => student.studentName.toLowerCase().includes(debounced.toLowerCase()) || student.studentId.toLowerCase().includes(debounced.toLowerCase())));
     } else {
       setFilteredData(data);
     }
-  }
+  }, [debounced, data]);
 
   useEffect(() => {
     handleSearch();
-  }, [debounced, data]);
+  }, [debounced, data, handleSearch]);
 
   function handleDisplay(showState = '') {
     setShowAddStudentForm(false);
@@ -166,7 +149,7 @@ function Dashboard() {
       default:
         setShowDashboard(true);
     }
-  };
+  }
 
   const cancelView = () => {
     handleDisplay();
@@ -248,42 +231,6 @@ function Dashboard() {
         {showAddStudentForm && (<AddStudentForm onSubmit={handleAddStudentSubmit} onCancel={cancelView} />)}
         {showImportStudentsForm && (<ImportStudents students={data} onCancel={cancelView} />)}
 
-
-        {/*
-          <Modal
-          opened={showAddStudentForm}
-          onClose={() => setShowAddStudentForm(false)}
-          title="Add Student"
-          centered
-          size='auto'
-          >
-          <AddStudentForm onSubmit={handleAddStudentSubmit} onCancel={handleCancelAddStudent} />
-          </Modal>
-        */}
-
-        {/*
-          <Modal
-            opened={showEditStudentForm}
-            onClose={() => setShowEditStudentForm(false)}
-            title="Edit Student"
-            centered
-            size='auto'
-          >
-            <EditStudentForm student={selectedStudent} onSave={handleSave} onCancel={() => setShowEditStudentForm(false)} />
-          </Modal>
-        */}
-
-        {/*
-          <Modal
-            opened={showTimeLogForm}
-            onClose={() => setShowTimeLogForm(false)}
-            title="Time Log"
-            centered
-            size='auto'
-          >
-            <TimeLogForm student={selectedStudent} onSave={handleSave} onCancel={() => setShowTimeLogForm(false)} />
-          </Modal>
-        */}
       </Box>
     </Container>
   )

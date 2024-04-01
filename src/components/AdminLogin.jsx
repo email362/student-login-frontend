@@ -1,6 +1,6 @@
 
 import { useContext, useState } from "react";
-import { AdminAuthContext } from "../main";
+import { AdminAuthContext } from "@src/main";
 import { useNavigate } from "react-router-dom";
 
 

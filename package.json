@@ -16,7 +16,6 @@
     "@mantine/hooks": "^7.4.1",
     "@mantine/modals": "^7.4.1",
     "@tabler/icons-react": "^2.40.0",
-    "axios": "^1.4.0",
     "dayjs": "^1.11.10",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.4",

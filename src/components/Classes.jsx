@@ -1,27 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { URL } from '../constants';
+import { useEffect, useState } from 'react';
+import { secondsToHoursMinutesSeconds } from '@src/utilities/time';
 import { Title, Text, Button, Select, Box, Stack } from '@mantine/core';
 import { useLoaderData, useParams, useNavigate } from 'react-router-dom';
+import { studentLogin, studentLogout } from '@src/services/apiServices';
 
-export async function loader({params}) {
-    const response = await axios.get(`${URL}/api/student`, { params: { studentId: params.studentId } });
-    return response.data;
-}
-
-/**
- * Converts seconds to hours, minutes, and seconds format.
- * @param {number} seconds - The total number of seconds to be converted.
- * @returns {string} The formatted time string in the format of "hh:mm:ss".
- */
-function secondsToHoursMinutesSeconds(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds - (hours * 3600)) / 60);
-    const secondsLeft = Math.round(seconds - (hours * 3600) - (minutes * 60));
-    return `${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}:${secondsLeft < 10 ? '0' + secondsLeft : secondsLeft}`;
-}
-
-function Classes({setStudent=null}) {
+function Classes({ setStudent = null }) {
     const { studentId } = useParams();
     const { classes, studentName } = useLoaderData();
     const [selectedClass, setSelectedClass] = useState('');
@@ -32,7 +15,7 @@ function Classes({setStudent=null}) {
 
     useEffect(() => {
         let interval = null;
-        
+
         if (startTimer) {
             interval = setInterval(() => {
                 setTimer(timer => timer + 1);
@@ -44,31 +27,28 @@ function Classes({setStudent=null}) {
         return () => clearInterval(interval);
     }, [startTimer]);
 
-    const onClassChange = (e) => {
-        const updatedClass = e.target.value;
-        setSelectedClass(updatedClass);
+    const handleLogin = (classToSend) => {
+        studentLogin(studentId, classToSend)
+            .then(() => {
+                setLoggedIn(true);
+                setStartTimer(true);
+
+            })
+            .catch(error => {
+                console.error('Error logging in:', error);
+            });
     };
 
-    const handleLogin = async (classToSend) => {
-        try {
-          const response = await axios.post(`${URL}/api/login`, { studentId: studentId, className: classToSend });
-          setLoggedIn(true);
-          setStartTimer(true);
-        } catch (error) {
-          console.error('Error logging in:', error);
-        }
-    };
-
-    const handleLogout = async () => {
-        try {
-          await axios.post(`${URL}/api/logout`, { studentId: studentId });
-        //   setStudent({});
-          setStartTimer(false);
-          setLoggedIn(false);
-          navigate('/', { replace: true });
-        } catch (error) {
-          console.error('Error logging out:', error);
-        }
+    const handleLogout = () => {
+        studentLogout(studentId)
+            .then(() => {
+                setStartTimer(false);
+                setLoggedIn(false);
+                navigate('/', { replace: true });
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+            });
     };
 
     return (
@@ -111,6 +91,6 @@ function Classes({setStudent=null}) {
             </Stack>
         </Box>
     );
-};
+}
 
 export default Classes;

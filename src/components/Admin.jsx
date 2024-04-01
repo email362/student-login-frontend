@@ -1,5 +1,5 @@
-import React, { useContext } from 'react';
-import { AdminAuthContext } from '../main';
+import { useContext } from 'react';
+import { AdminAuthContext } from '@src/main';
 
 export default function Admin() {
 
