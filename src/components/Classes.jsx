@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { URL } from '@src/constants';
 import { secondsToHoursMinutesSeconds } from '@src/utilities/time';
 import { Title, Text, Button, Select, Box, Stack } from '@mantine/core';
 import { useLoaderData, useParams, useNavigate } from 'react-router-dom';
+import { studentLogin, studentLogout } from '@src/services/apiServices';
 
 function Classes({ setStudent = null }) {
     const { studentId } = useParams();
@@ -28,27 +27,28 @@ function Classes({ setStudent = null }) {
         return () => clearInterval(interval);
     }, [startTimer]);
 
-    const handleLogin = async (classToSend) => {
-        try {
-            const response = await axios.post(`${URL}/api/login`, { studentId: studentId, className: classToSend });
-            console.log('Login response:', response.data);
-            setLoggedIn(true);
-            setStartTimer(true);
-        } catch (error) {
-            console.error('Error logging in:', error);
-        }
+    const handleLogin = (classToSend) => {
+        studentLogin(studentId, classToSend)
+            .then(() => {
+                setLoggedIn(true);
+                setStartTimer(true);
+
+            })
+            .catch(error => {
+                console.error('Error logging in:', error);
+            });
     };
 
-    const handleLogout = async () => {
-        try {
-            await axios.post(`${URL}/api/logout`, { studentId: studentId });
-            //   setStudent({});
-            setStartTimer(false);
-            setLoggedIn(false);
-            navigate('/', { replace: true });
-        } catch (error) {
-            console.error('Error logging out:', error);
-        }
+    const handleLogout = () => {
+        studentLogout(studentId)
+            .then(() => {
+                setStartTimer(false);
+                setLoggedIn(false);
+                navigate('/', { replace: true });
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+            });
     };
 
     return (

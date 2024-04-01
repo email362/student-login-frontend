@@ -14,6 +14,7 @@ import AdminLogin from '@components/AdminLogin.jsx'
 import AdminContextProvider from '@components/AdminContextProvider.jsx'
 import Dashboard from '@components/Dashboard/Dashboard.jsx'
 import { studentLoader } from '@services/loaders/studentLoader'
+import { studentsLoader } from '@services/loaders/studentsLoader'
 
 
 
@@ -62,6 +63,7 @@ const router = createBrowserRouter([
   // },
   {
     path: '/admin',
+    loader: studentsLoader,
     element: (
       <AdminAuth redirectTo='/admin/login'>
         <Dashboard />

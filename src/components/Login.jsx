@@ -1,8 +1,7 @@
-import axios from 'axios';
 import { useState } from 'react';
-import { URL } from '@src/constants';
 import { TextInput, Button, Title, Box, Notification } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
+import { getStudent } from '@src/services/apiServices';
 
 const Login = () => {
 
@@ -17,27 +16,26 @@ const Login = () => {
         }, 3000);
     };
 
-    const handleGetStudent = async () => {
+    const handleGetStudent = () => {
+        setLoginStatus('Logging in...');
         if (studentId === '') {
             handleLoginStatus('Please enter a student ID.');
             return;
         }
-        try {
-            setLoginStatus('Logging in...');
-            const response = await axios.get(`${URL}/api/student`, { params: { studentId: studentId } });
-            if (response.data === null) {
-                setLoginStatus("No Language Classes found. Please see MLC Staff.");
-                console.log("response.data is null");
-                return;
-            }
-            // setStudent(response.data);
-            setLoginStatus('');
-            navigate(`/students/${studentId}`, { replace: true });
-        } catch (error) {
-            console.error('Error getting student:', error);
-            handleLoginStatus('Error getting student. Please try again.');
-        }
-    }
+        getStudent(studentId)
+            .then((student) => {
+                if (student === null) {
+                    handleLoginStatus("No Language Classes found. Please see MLC Staff.");
+                } else {
+                    setLoginStatus('');
+                    navigate(`/students/${studentId}`, { replace: true });
+                }
+            })
+            .catch(error => {
+                console.error('Error getting student:', error);
+                handleLoginStatus('Error getting student. Please try again.');
+            });
+    };
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
